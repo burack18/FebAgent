@@ -1,0 +1,24 @@
+@FEBAgent_HostAddress = http://localhost:5246
+
+POST {{FEBAgent_HostAddress}}/api/Agent/Ask
+Content-Type: application/json
+Accept-Language: en-US,en;q=0.5
+{
+  "question":"Please turn on the lamp"
+}
+
+
+
+###
+
+GET {{FEBAgent_HostAddress}}/api/documents
+Accept:application/json
+
+###
+
+POST {{FEBAgent_HostAddress}}/api/documents/add
+Content-Type: application/json
+Accept-Language: en-US,en;q=0.5
+{
+  "documentName":"doc",
+}
