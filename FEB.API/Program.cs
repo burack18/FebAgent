@@ -1,3 +1,6 @@
+using FEB.Infrastructure;
+using FEB.Service.Abstract;
+using FEB.Service.DocumentStorage;
 using FEBAgent.Service;
 using Microsoft.SemanticKernel;
 
@@ -17,6 +20,10 @@ builder.Services.AddOpenAIChatCompletion(
 );
 
 builder.Services.AddSingleton<OpenAIService>();
+builder.Services.AddSingleton<IDocumentRepository,FebAgentContext>();
+
+builder.Services.AddSingleton<IDocumentService, FileSystemStorage>();
+builder.Services.AddSingleton<IConfigurationManager>(builder.Configuration); // Ensure IConfiguration is available
 
 builder.Services.AddTransient((serviceProvider) => {
     var kernel = new Kernel(serviceProvider);

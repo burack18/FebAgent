@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FEB.Infrastructure\FEB.Infrastructure.csproj" />
     <ProjectReference Include="..\FEB.Service\FEB.Service.csproj" />
   </ItemGroup>
 

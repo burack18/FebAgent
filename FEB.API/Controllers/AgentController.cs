@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel;
 
 namespace FEBAgent.Controllers
 {
-    [Route("api/v1/agent")]
+    [Route("api/v1/agents")]
     [ApiController]
     public class AgentController : ControllerBase
     {
