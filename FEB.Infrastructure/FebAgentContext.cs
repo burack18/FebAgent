@@ -7,19 +7,13 @@ using System.Threading.Tasks;
 
 namespace FEB.Infrastructure
 {
-    public class FebAgentContext : IDocumentRepository
+    public class FebAgentContext : IDisposable
     {
 
         private bool disposedValue;
 
         public List<Document> Documents { get; set; } = [];
-
-
-
-
-
-
-
+        public List<ChatMessage> ChatMessages { get; set; } = [];
 
         //Ignore
         protected virtual void Dispose(bool disposing)
@@ -44,26 +38,6 @@ namespace FEB.Infrastructure
             GC.SuppressFinalize(this);
         }
 
-        public async Task<List<Document>> GetDocuments()
-        {
-            return await Task.FromResult(this.Documents);
-        }
 
-        public void AddDocument(Document document)
-        {
-            this.Documents.Add(document);
-        }
-
-        public void DeleteDocument(Document? document)
-        {
-            if (document == null) return;
-            this.Documents.Remove(document);
-        }
-
-        public void DeleteDocument(string documentID)
-        {
-            var document = this.Documents.FirstOrDefault(x => x.Id == documentID);
-            this.DeleteDocument(document);
-        }
     }
 }

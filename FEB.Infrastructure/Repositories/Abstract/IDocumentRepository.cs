@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FEB.Infrastructure
+namespace FEB.Infrastructure.Repositories.Abstract
 {
-    public interface IDocumentRepository:IDisposable
+    public interface IDocumentRepository
     {
         Task<List<Document>> GetDocuments();
         void AddDocument(Document document);
