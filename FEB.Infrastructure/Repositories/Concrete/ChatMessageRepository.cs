@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FEB.Infrastructure.Repositories.Concrete
 {
-    public class ChatMessageRepository : IChatMessage
+    public class ChatMessageRepository : IChatMessageRepository
     {
         private FebAgentContext _dbContext;
         private IConfigurationManager _configurationManager;
@@ -49,13 +49,13 @@ namespace FEB.Infrastructure.Repositories.Concrete
         {
             var lastMessage = _dbContext.ChatMessages.Where(x => x.SessionKey == sessionKey).OrderByDescending(x => x.TimestampCreated).FirstOrDefault();
             var timeLimit = _configurationManager.GetSection("ChatHistory")["SessionTimeLimit"] ?? throw new Exception("Session Time Limit Required");
-            var messageCountLimit = _configurationManager.GetSection("ChatHistory")["MessageCountLimit"] ?? throw new Exception("Message Count Limit Required");
+            var maxMessages = _configurationManager.GetSection("ChatHistory")["MaxMessages"] ?? throw new Exception("Message Count Limit Required");
 
             if (lastMessage == null) return Task.FromResult(true);
 
             if (DateTime.Now < lastMessage.TimestampCreated.AddMinutes(Convert.ToInt32(timeLimit))) return Task.FromResult(true);
 
-            if (_dbContext.ChatMessages.Count >= Convert.ToInt32(messageCountLimit))return Task.FromResult(true);
+            if (_dbContext.ChatMessages.Count >= Convert.ToInt32(maxMessages))return Task.FromResult(true);
 
             return Task.FromResult(false);
         }

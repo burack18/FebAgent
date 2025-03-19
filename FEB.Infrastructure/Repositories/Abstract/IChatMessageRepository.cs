@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FEB.Infrastructure.Repositories.Abstract
 {
-    public interface IChatMessage
+    public interface IChatMessageRepository
     {
         Task<List<ChatMessage>> GetChatMessages();
         Task<List<ChatMessage>> GetChatMessages(string sessionKey);
