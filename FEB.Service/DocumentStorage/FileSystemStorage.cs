@@ -1,4 +1,4 @@
-﻿using FEB.Infrastructure;
+﻿using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Service.Abstract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;

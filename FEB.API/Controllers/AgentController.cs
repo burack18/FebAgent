@@ -1,4 +1,4 @@
-﻿using FEBAgent.Service;
+﻿using FEB.Service.Concrete;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
@@ -19,12 +19,17 @@ namespace FEBAgent.Controllers
         [HttpPost("ask")]
         public async Task<ChatMessageContent> Ask([FromBody] QuestionRequest req)
         {
-            return await service.Ask(req.question);
+            return await service.Ask(new FEB.Service.Dto.UserMessage()
+            {
+                Question = req.question,
+                SessionKey = req.sessionKey
+            });
         }
 
         public struct QuestionRequest
         {
             public string question { get; set; }
+            public string sessionKey { get; set; }
         }
     }
 }

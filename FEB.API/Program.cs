@@ -1,7 +1,9 @@
 using FEB.Infrastructure;
+using FEB.Infrastructure.Repositories.Abstract;
+using FEB.Infrastructure.Repositories.Concrete;
 using FEB.Service.Abstract;
+using FEB.Service.Concrete;
 using FEB.Service.DocumentStorage;
-using FEBAgent.Service;
 using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,10 +24,14 @@ builder.Services.AddOpenAIChatCompletion(
 );
 
 builder.Services.AddSingleton<OpenAIService>();
-builder.Services.AddSingleton<IDocumentRepository, FebAgentContext>();
+builder.Services.AddSingleton<FebAgentContext>();
 
 builder.Services.AddSingleton<IDocumentService, FileSystemStorage>();
-builder.Services.AddSingleton<IConfigurationManager>(builder.Configuration); // Ensure IConfiguration is available
+builder.Services.AddSingleton<IDocumentRepository,DocumentRepository>();
+builder.Services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
+builder.Services.AddSingleton<IChatMessageService, ChatMessageService>();
+
+builder.Services.AddSingleton<IConfigurationManager>(builder.Configuration); 
 
 builder.Services.AddTransient((serviceProvider) =>
 {
@@ -45,7 +51,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-app.Map("/", () => "hi");
+
 app.UseAuthorization();
 
 app.MapControllers();
