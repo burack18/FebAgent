@@ -34,12 +34,13 @@ builder.Services.AddSingleton<IChatMessageService, ChatMessageService>();
 builder.Services.AddSingleton<IConfigurationManager>(builder.Configuration); 
 
 builder.Services.AddTransient((serviceProvider) =>
-{
+{   
     var kernel = new Kernel(serviceProvider);
     return kernel;
 });
 
 builder.Services.AddSwaggerGen();
+
 
 
 var app = builder.Build();

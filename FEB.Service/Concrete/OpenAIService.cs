@@ -76,5 +76,9 @@ namespace FEB.Service.Concrete
             return response;
         }
 
+        public async Task<string> Embed()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
