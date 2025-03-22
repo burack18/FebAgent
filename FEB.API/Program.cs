@@ -5,6 +5,7 @@ using FEB.Service.Abstract;
 using FEB.Service.Concrete;
 using FEB.Service.DocumentStorage;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Embeddings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,12 @@ builder.Services.AddOpenAIChatCompletion(
     modelId: "gpt-4o-mini",
     apiKey: api_key
 );
+#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+builder.Services.AddOpenAITextEmbeddingGeneration(
+    modelId: "text-embedding-ada-002",          // Name of the embedding model, e.g. "text-embedding-ada-002".
+    apiKey: api_key
+);
+#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 builder.Services.AddSingleton<OpenAIService>();
 builder.Services.AddSingleton<FebAgentContext>();
@@ -40,8 +47,11 @@ builder.Services.AddTransient((serviceProvider) =>
     return kernel;
 });
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddTransient((serviceProvider) => {
 
+    return new Kernel(serviceProvider);
+});
+builder.Services.AddSwaggerGen();
 
 
 var app = builder.Build();

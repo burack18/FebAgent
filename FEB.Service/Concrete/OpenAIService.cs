@@ -5,6 +5,7 @@ using FEBAgent.Domain;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Embeddings;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
@@ -14,17 +15,22 @@ namespace FEB.Service.Concrete
     {
         private Kernel _kernel;
         private IChatMessageService _chatMessageService;
+#pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private ITextEmbeddingGenerationService _textEmbeddingGenerationService;
 
-        public OpenAIService(Kernel kernel, IChatMessageService chatMessageService)
+        public OpenAIService(Kernel kernel, IChatMessageService chatMessageService, ITextEmbeddingGenerationService textEmbeddingGenerationService)
         {
+#pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _kernel = kernel;
             _chatMessageService = chatMessageService;
+            _textEmbeddingGenerationService = textEmbeddingGenerationService;
         }
         public async Task<ChatMessageContent> Ask(UserMessage userMessage)
         {
-            var isSessionExpired = await _chatMessageService.IsSessionExpired(userMessage.SessionKey);
+            //var isSessionExpired = await _chatMessageService.IsSessionExpired(userMessage.SessionKey);
 
-            if (isSessionExpired) throw new Exception("Session expired");
+            //if (isSessionExpired) throw new Exception("Session expired");
+
 
 
             var message = new ChatMessage
@@ -78,7 +84,14 @@ namespace FEB.Service.Concrete
 
         public async Task<string> Embed()
         {
-            throw new NotImplementedException();
+            IList<ReadOnlyMemory<float>> embeddings =
+                        await _textEmbeddingGenerationService.GenerateEmbeddingsAsync(
+                        [
+                            "sample text 1",
+                            "sample text 2"
+                        ]);
+            Console.WriteLine(embeddings);
+            return "";
         }
     }
 }

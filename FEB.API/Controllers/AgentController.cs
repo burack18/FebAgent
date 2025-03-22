@@ -26,6 +26,12 @@ namespace FEBAgent.Controllers
             });
         }
 
+        [HttpPost("embed")]
+        public async Task<string> Embed()
+        {
+            return await service.Embed();
+        }
+
         public struct QuestionRequest
         {
             public string question { get; set; }

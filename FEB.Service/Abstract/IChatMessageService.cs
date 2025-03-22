@@ -15,5 +15,6 @@ namespace FEB.Service.Abstract
         void DeleteChatMessage(ChatMessage chatMessage);
         void DeleteChatMessage(string chatMessageID);
         Task<bool> IsSessionExpired(string sessionKey);
+
     }
 }
