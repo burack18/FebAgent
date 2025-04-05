@@ -1,4 +1,5 @@
-﻿using FEBAgent.Domain;
+﻿using FEB.Infrastructure.Dto;
+using FEBAgent.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,9 @@ namespace FEB.Infrastructure.Repositories.Abstract
     public interface IDocumentRepository
     {
         Task<List<Document>> GetDocuments();
-        void AddDocument(Document document);
+        Task AddDocument(Document document);
         void DeleteDocument(Document document);
         void DeleteDocument(string documentID);
+        Task<List<RelatedDocument>> GetRelatedDocuments(float[] questionVector, int knn);
     }
 }

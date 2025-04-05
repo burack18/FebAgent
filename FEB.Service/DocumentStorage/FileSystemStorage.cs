@@ -1,5 +1,6 @@
 ﻿using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Service.Abstract;
+using FEBAgent.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,12 @@ namespace FEB.Service.DocumentStorage
         public FileSystemStorage(IDocumentRepository documentRepository, ILogger<DocumentStorageDecorator> logger, IConfigurationManager configurationManager) : base(documentRepository, logger)
         {
             this.ConfigurationManager = configurationManager;
+        }
+
+
+        public override Task<List<Document>> GetDocuments()
+        {
+            throw new NotImplementedException();
         }
 
         public async Task SaveDocument(string userID, IFormFile file)

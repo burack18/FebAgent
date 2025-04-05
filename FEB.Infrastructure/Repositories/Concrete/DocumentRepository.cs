@@ -1,4 +1,5 @@
 ﻿using FEB.Infrastructure.Configuration;
+using FEB.Infrastructure.Dto;
 using FEB.Infrastructure.Repositories.Abstract;
 using FEBAgent.Domain;
 using Microsoft.Azure.Cosmos;
@@ -23,17 +24,17 @@ namespace FEB.Infrastructure.Repositories.Concrete
         {
             var cosmosConfig = configuration
                 .GetSection("CosmosDb")
-                .Get<CosmosDbSettings>()??throw new Exception("CosmosDB configuration Required");
+                .Get<CosmosDbSettings>() ?? throw new Exception("CosmosDB configuration Required");
             _client = client;
-            _container = _client.GetContainer(cosmosConfig.DatabaseName,"");
+            _container = _client.GetContainer(cosmosConfig.DatabaseName, "documents");
         }
 
         public async Task<List<Document>> GetDocuments()
         {
             var query = _container.GetItemLinqQueryable<Document>(true)
-                                 .Where(d => d.PartitionKey == "document")
+                                 .Where(d => d.PartitionKey == "documents")
                                  .ToFeedIterator();
-                                 
+
 
             List<Document> results = new();
             while (query.HasMoreResults)
@@ -43,12 +44,16 @@ namespace FEB.Infrastructure.Repositories.Concrete
             }
 
             return results;
-          
+
         }
 
-        public void AddDocument(Document document)
+        public async Task AddDocument(Document document)
         {
-            //_dbContext.Documents.Add(document);
+            if (document == null) throw new ArgumentNullException(nameof(document));
+
+            document.CreatedOn = DateTime.UtcNow;
+
+            await _container.CreateItemAsync<Document>(document);
         }
 
         public void DeleteDocument(Document? document)
@@ -61,6 +66,34 @@ namespace FEB.Infrastructure.Repositories.Concrete
         {
             //var document = _dbContext.Documents.FirstOrDefault(x => x.Id == documentID);
             //DeleteDocument(document);
+        }
+
+        public async Task<List<RelatedDocument>> GetRelatedDocuments(float[] questionVector, int knn)
+        {
+            var docs = await GetDocuments();
+           
+            var relatedDocs = docs
+                .Select(d => new RelatedDocument
+                {
+                    Document = d,
+                    Similarity = CosineSimilarity(questionVector, d.Vector)
+                })
+                .OrderByDescending(x => x.Similarity)
+                .Take(knn)
+                .ToList();
+            return relatedDocs;
+        }
+
+        private float CosineSimilarity(float[] v1, float[] v2)
+        {
+            float dot = 0f, mag1 = 0f, mag2 = 0f;
+            for (int i = 0; i < v1.Length; i++)
+            {
+                dot += v1[i] * v2[i];
+                mag1 += v1[i] * v1[i];
+                mag2 += v2[i] * v2[i];
+            }
+            return dot / (float)(Math.Sqrt(mag1) * Math.Sqrt(mag2) + 1e-8);
         }
     }
 }

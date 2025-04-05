@@ -11,7 +11,7 @@ Accept-Language: en-US,en;q=0.5
 
 ###
 
-GET {{FEBAgent_HostAddress}}/api/documents
+GET {{FEBAgent_HostAddress}}/api/v1/documents
 Accept:application/json
 
 ###

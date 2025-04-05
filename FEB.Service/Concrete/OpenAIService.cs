@@ -17,13 +17,15 @@ namespace FEB.Service.Concrete
         private IChatMessageService _chatMessageService;
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private ITextEmbeddingGenerationService _textEmbeddingGenerationService;
+        private readonly IDocumentRepository _documentRepository;
 
-        public OpenAIService(Kernel kernel, IChatMessageService chatMessageService, ITextEmbeddingGenerationService textEmbeddingGenerationService)
+        public OpenAIService(Kernel kernel, IChatMessageService chatMessageService, ITextEmbeddingGenerationService textEmbeddingGenerationService, IDocumentRepository documentRepository)
         {
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _kernel = kernel;
             _chatMessageService = chatMessageService;
             _textEmbeddingGenerationService = textEmbeddingGenerationService;
+            _documentRepository = documentRepository;
         }
         public async Task<ChatMessageContent> Ask(UserMessage userMessage)
         {
@@ -45,32 +47,40 @@ namespace FEB.Service.Concrete
         }
         public async Task<ChatMessageContent> Ask(string question, string sessionKey)
         {
-            var chatMessages = await _chatMessageService.GetChatMessages(sessionKey);
+            //var chatMessages = await _chatMessageService.GetChatMessages(sessionKey);
             var chatHistory = new ChatHistory();
-            foreach (var chatMessage in chatMessages)
+            //foreach (var chatMessage in chatMessages)
+            //{
+            //    chatHistory.Add(new ChatMessageContent
+            //    {
+            //        Content = chatMessage.Message,
+            //        Role = string.IsNullOrEmpty(chatMessage.UserID) ? AuthorRole.User : AuthorRole.Assistant
+            //    });
+            //}
+            var questionVector = await Embed([question]);
+            var relatedDocInfo=string.Empty;
+            if (questionVector.Count > 0)
             {
-                chatHistory.Add(new ChatMessageContent
+                var relatedDocuments =await  _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(), 2);
+                foreach (var d in relatedDocuments)
                 {
-                    Content = chatMessage.Message,
-                    Role = string.IsNullOrEmpty(chatMessage.UserID) ? AuthorRole.User : AuthorRole.Assistant
-                });
+                    relatedDocInfo += d.Document.Content;
+                }
             }
 
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
-            string userInfo = """
-                {
-                "firstName":"omer faruk"
-                }
-                """;
+      
 
             // Add a system message to define the assistant's behavior
             chatHistory.AddSystemMessage("""
                 You are a helpful AI assistant. Provide concise and accurate responses. 
                 When responding, you may use the user's first name if available.
-                """ + userInfo);
+                Related Document content is:
+                """+relatedDocInfo);
+            
             chatHistory.AddUserMessage(question);
 
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
@@ -82,16 +92,11 @@ namespace FEB.Service.Concrete
             return response;
         }
 
-        public async Task<string> Embed()
+        public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)
         {
             IList<ReadOnlyMemory<float>> embeddings =
-                        await _textEmbeddingGenerationService.GenerateEmbeddingsAsync(
-                        [
-                            "sample text 1",
-                            "sample text 2"
-                        ]);
-            Console.WriteLine(embeddings);
-            return "";
+                        await _textEmbeddingGenerationService.GenerateEmbeddingsAsync(chunks);
+            return embeddings;
         }
     }
 }

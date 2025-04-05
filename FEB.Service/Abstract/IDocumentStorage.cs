@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FEBAgent.Domain;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace FEB.Service.Abstract
     public interface IDocumentStorage
     {
         Task SaveDocuments(string userID, List<IFormFile> formFiles);
+        Task<List<Document>> GetDocuments();
     }
 }

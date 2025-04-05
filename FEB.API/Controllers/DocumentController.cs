@@ -1,4 +1,6 @@
-﻿using FEB.Service.Abstract;
+﻿using FEB.Infrastructure.Repositories.Abstract;
+using FEB.Service.Abstract;
+using FEBAgent.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Xceed.Words.NET;
@@ -11,10 +13,18 @@ namespace FEB.API.Controllers
     {
 
         private readonly IDocumentService _documentService;
-
-        public DocumentController(IDocumentService documentService)
+        private readonly IDocumentRepository documentRepository;
+        public DocumentController(IDocumentService documentService, IDocumentRepository documentRepository)
         {
             _documentService = documentService;
+            this.documentRepository = documentRepository;
+        }
+
+        [HttpGet("")]
+        public async Task<List<Document>> GetDocuments()
+        {
+            //return await this._documentService.GetDocuments();
+            return await this.documentRepository.GetDocuments();
         }
 
         [HttpPost("loadDocuments")]
@@ -29,17 +39,7 @@ namespace FEB.API.Controllers
                     // Save the document to the service
                     await _documentService.SaveDocument("U016061", file);
 
-                    // Process the document content with DocX
-                    using var stream = file.OpenReadStream();
-                    using var memoryStream = new MemoryStream();
-                    await stream.CopyToAsync(memoryStream);
-                    memoryStream.Position = 0;
-
-                    using var doc = DocX.Load(memoryStream);
-                    string documentText = doc.Text;
-                    List<string> chunks = ChunkByWords(documentText,100);
-                    Console.WriteLine($"Document Name: {file.FileName}");
-                    Console.WriteLine($"Document Content: {documentText}");
+        
                 }
                 else
                 {
@@ -47,29 +47,7 @@ namespace FEB.API.Controllers
                 }
             }
         }
-        public static List<string> ChunkByWords(string text, int maxWords)
-        {
-            var words = text.Split(' ');
-            var chunks = new List<string>();
-            var currentChunk = new List<string>();
-
-            foreach (var word in words)
-            {
-                currentChunk.Add(word);
-                if (currentChunk.Count >= maxWords)
-                {
-                    chunks.Add(string.Join(" ", currentChunk));
-                    currentChunk.Clear();
-                }
-            }
-
-            if (currentChunk.Any())
-            {
-                chunks.Add(string.Join(" ", currentChunk));
-            }
-
-            return chunks;
-        }
+        
 
     }
 }
