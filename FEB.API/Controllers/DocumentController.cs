@@ -14,6 +14,7 @@ namespace FEB.API.Controllers
 
         private readonly IDocumentService _documentService;
         private readonly IDocumentRepository documentRepository;
+        
         public DocumentController(IDocumentService documentService, IDocumentRepository documentRepository)
         {
             _documentService = documentService;
@@ -24,7 +25,7 @@ namespace FEB.API.Controllers
         public async Task<List<Document>> GetDocuments()
         {
             //return await this._documentService.GetDocuments();
-            return await this.documentRepository.GetDocuments();
+            return await this._documentService.GetDocuments();
         }
 
         [HttpPost("loadDocuments")]

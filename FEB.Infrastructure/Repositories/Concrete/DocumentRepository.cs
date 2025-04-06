@@ -70,12 +70,12 @@ namespace FEB.Infrastructure.Repositories.Concrete
 
         public async Task<List<RelatedDocument>> GetRelatedDocuments(float[] questionVector, int knn)
         {
-            var docs = await GetDocuments();
-           
+            var docs = await GetDocumentChunks();
+
             var relatedDocs = docs
                 .Select(d => new RelatedDocument
                 {
-                    Document = d,
+                    DocumentChunk = d,
                     Similarity = CosineSimilarity(questionVector, d.Vector)
                 })
                 .OrderByDescending(x => x.Similarity)
@@ -94,6 +94,13 @@ namespace FEB.Infrastructure.Repositories.Concrete
                 mag2 += v2[i] * v2[i];
             }
             return dot / (float)(Math.Sqrt(mag1) * Math.Sqrt(mag2) + 1e-8);
+        }
+
+        public async Task<List<DocumentChunk>> GetDocumentChunks()
+        {
+            var documents = await GetDocuments();
+
+            return [.. documents.SelectMany(x => x.DocumentChunks)];
         }
     }
 }

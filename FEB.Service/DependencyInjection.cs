@@ -30,7 +30,8 @@ namespace FEB.Service
             services.AddSingleton<IDocumentRepository, DocumentRepository>();
             services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
             services.AddSingleton<IChatMessageService, ChatMessageService>();
-
+            
+            
             services.AddSingleton(new BlobServiceClient(conn));
             return services;
         }

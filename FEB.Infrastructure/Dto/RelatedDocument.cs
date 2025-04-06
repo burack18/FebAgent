@@ -9,7 +9,7 @@ namespace FEB.Infrastructure.Dto
 {
     public class RelatedDocument
     {
-        public Document Document{ get; set; }
+        public DocumentChunk DocumentChunk{ get; set; }
         public float Similarity { get; set; }
     }
 }

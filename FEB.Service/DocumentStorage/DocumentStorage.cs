@@ -23,10 +23,10 @@ namespace FEB.Service.DocumentStorage
         private readonly string _containerName = "documents";
         private readonly IDocumentRepository _documentRepository;
         private readonly OpenAIService _openAIservice;
-        
-        public DocumentStorage(IDocumentRepository documentRepository, 
-            ILogger<DocumentStorage> logger, 
-            BlobServiceClient blobServiceClient, 
+
+        public DocumentStorage(IDocumentRepository documentRepository,
+            ILogger<DocumentStorage> logger,
+            BlobServiceClient blobServiceClient,
             OpenAIService openAIservice)
             : base(documentRepository, logger)
         {
@@ -55,10 +55,6 @@ namespace FEB.Service.DocumentStorage
                     Url = blobClient.Uri.ToString(), // Public URL
                     CreatedOn = blobItem.Properties.CreatedOn?.DateTime ?? DateTime.UtcNow,
                     PartitionKey = "documents",
-                    ParentDocumentId = null,  // Not available from blob storage
-                    ChunkIndex = 0, // Default since blobs are whole files
-                    Content = "", // We don't fetch content from blob in this method
-                    Vector = Array.Empty<float>() // Not stored in blob metadata
                 };
 
                 documents.Add(document);
@@ -96,22 +92,29 @@ namespace FEB.Service.DocumentStorage
 
                 var vectors = await _openAIservice.Embed(chunks);
 
+                var document = new Document()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DocumentName = file.Name,
+                    UserID = userID,
+                    Url = null, // set this if you have it
+                    CreatedOn = DateTime.UtcNow,
+                    PartitionKey = "documents",
+                };
+
                 for (int i = 0; i < chunks.Count; i++)
                 {
-                    var document = new Document
+                    var documentChunk = new DocumentChunk
                     {
                         Id = Guid.NewGuid().ToString(),
-                        DocumentName = file.Name,
-                        UserID = userID,
-                        ParentDocumentId = null, // set this if you have it
                         Content = chunks[i],
-                        ChunkIndex = i,
                         CreatedOn = DateTime.UtcNow,
-                        Vector = vectors[i].ToArray(), // this converts ReadOnlyMemory<float> to float[]
+                        Vector = vectors[i].ToArray(),
                     };
-
-                    await _documentRepository.AddDocument(document); // use the AddDocumentAsync method you built
+                    document.DocumentChunks.Add(documentChunk);
                 }
+
+                await _documentRepository.AddDocument(document); // use the AddDocumentAsync method you built
 
 
                 //var blobName = $"{userID}/{Guid.NewGuid()}_{file.FileName}";

@@ -64,14 +64,14 @@ namespace FEB.Service.Concrete
                 var relatedDocuments =await  _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(), 2);
                 foreach (var d in relatedDocuments)
                 {
-                    relatedDocInfo += d.Document.Content;
+                    relatedDocInfo += d.DocumentChunk.Content;
                 }
             }
 
-            OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            };
+            //OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
+            //{
+            //    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            //};
       
 
             // Add a system message to define the assistant's behavior
@@ -86,7 +86,7 @@ namespace FEB.Service.Concrete
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
             var response = await chatCompletionService.GetChatMessageContentAsync(
                 chatHistory,
-                openAIPromptExecutionSettings,
+                //openAIPromptExecutionSettings,
                 kernel: _kernel
             );
             return response;

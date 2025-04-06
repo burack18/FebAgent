@@ -30,6 +30,12 @@ builder.Services.AddSingleton<IConfigurationManager>(builder.Configuration);
 builder.Services.AddInfrastucture(builder.Configuration);
 builder.Services.AddService(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
+
 
 
 
@@ -38,6 +44,7 @@ builder.Services.AddSwaggerGen();
 
 
 var app = builder.Build();
+app.UseCors("AllowSpecificOrigin");
 
 app.UseSwagger();
 app.UseSwaggerUI();

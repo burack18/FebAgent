@@ -16,9 +16,8 @@ namespace FEBAgent.Domain
         public string PartitionKey { get; set; } = "documents";
         public string Url { get; set; }
         public DateTime CreatedOn { get; set; }
-        public int ChunkIndex { get; set; }                      
-        public string Content { get; set; } = string.Empty;      
-        public float[] Vector { get; set; } = Array.Empty<float>();
+
+        public virtual List<DocumentChunk> DocumentChunks { get; set; } = [];
 
     }
 }
