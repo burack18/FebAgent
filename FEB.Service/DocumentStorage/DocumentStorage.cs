@@ -8,6 +8,7 @@ using FEBAgent.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,15 +43,21 @@ namespace FEB.Service.DocumentStorage
 
             await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
             {
+
                 var blobClient = containerClient.GetBlobClient(blobItem.Name);
 
                 // Extract UserID from blob name (assuming format: "userID/filename")
                 var parts = blobItem.Name.Split('/');
                 string userID = parts.Length > 1 ? parts[0] : "unknown";
 
+                blobItem.Metadata.TryGetValue("filename", out string filename);
+                blobItem.Metadata.TryGetValue("fileID", out string fileID);
+
+
                 var document = new Document
                 {
-                    DocumentName = Path.GetFileName(blobItem.Name),
+                    Id = fileID,
+                    DocumentName = filename ?? "",
                     UserID = userID,  // Extracted from blob path
                     Url = blobClient.Uri.ToString(), // Public URL
                     CreatedOn = blobItem.Properties.CreatedOn?.DateTime ?? DateTime.UtcNow,
@@ -75,7 +82,7 @@ namespace FEB.Service.DocumentStorage
 
 
 
-            //var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
 
             foreach (var file in formFiles)
@@ -116,15 +123,23 @@ namespace FEB.Service.DocumentStorage
 
                 await _documentRepository.AddDocument(document); // use the AddDocumentAsync method you built
 
+                stream.Position = 0;
 
-                //var blobName = $"{userID}/{Guid.NewGuid()}_{file.FileName}";
-                //var blobClient = containerClient.GetBlobClient(blobName);
+                var blobName = $"{userID}/{Guid.NewGuid()}_{file.FileName}";
+                var blobClient = containerClient.GetBlobClient(blobName);
+                IDictionary<string, string> metaData = new Dictionary<string, string>();
+                metaData.Add(new KeyValuePair<string, string>("filename", file.FileName));
+                metaData.Add(new KeyValuePair<string, string>("fileID", document.Id));
+
+                var options = new BlobUploadOptions()
+                {
+                    HttpHeaders = new BlobHttpHeaders { ContentType = file.ContentType },
+                    Metadata=metaData
+                };
+                await blobClient.UploadAsync(stream, options);
 
 
-                //await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = file.ContentType });
-
-
-                //logger.LogInformation($"File {file.FileName} uploaded successfully as {blobName}.");
+                logger.LogInformation($"File {file.FileName} uploaded successfully as {blobName}.");
             }
         }
         public static List<string> ChunkByWords(string text, int maxWords)

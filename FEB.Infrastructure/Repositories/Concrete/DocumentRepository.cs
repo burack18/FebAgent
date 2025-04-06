@@ -52,7 +52,6 @@ namespace FEB.Infrastructure.Repositories.Concrete
             if (document == null) throw new ArgumentNullException(nameof(document));
 
             document.CreatedOn = DateTime.UtcNow;
-
             await _container.CreateItemAsync<Document>(document);
         }
 
