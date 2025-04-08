@@ -2,6 +2,7 @@
 using FEB.Service.Abstract;
 using FEBAgent.Domain;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Xceed.Words.NET;
 
@@ -48,7 +49,12 @@ namespace FEB.API.Controllers
                 }
             }
         }
-        
+        [HttpDelete("{documentID}")]
+        public async Task<IActionResult> DeleteDocument(string documentID)
+        {
+            await this._documentService.DeleteDocumentByDocumentID(documentID);
+            return Ok();
+        }
 
     }
 }

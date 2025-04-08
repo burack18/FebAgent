@@ -13,5 +13,6 @@ namespace FEB.Service.Abstract
         Task SaveDocuments(string userID, List<IFormFile> files);
         Task SaveDocument(string userID, IFormFile file);
         Task<List<Document>> GetDocuments();
+        Task DeleteDocumentByDocumentID(string documentID);
     }
 }

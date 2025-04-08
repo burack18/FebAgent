@@ -41,7 +41,7 @@ namespace FEB.Service.DocumentStorage
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             var documents = new List<Document>();
 
-            await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
+            await foreach (BlobItem blobItem in containerClient.GetBlobsAsync(traits: BlobTraits.Metadata))
             {
 
                 var blobClient = containerClient.GetBlobClient(blobItem.Name);
@@ -134,7 +134,7 @@ namespace FEB.Service.DocumentStorage
                 var options = new BlobUploadOptions()
                 {
                     HttpHeaders = new BlobHttpHeaders { ContentType = file.ContentType },
-                    Metadata=metaData
+                    Metadata = metaData
                 };
                 await blobClient.UploadAsync(stream, options);
 
@@ -164,6 +164,13 @@ namespace FEB.Service.DocumentStorage
             }
 
             return chunks;
+        }
+
+        public async Task DeleteDocumentByDocumentID(string documentID)
+        {
+            await _documentRepository.DeleteDocument(documentID);
+
+            return;
         }
     }
 }
