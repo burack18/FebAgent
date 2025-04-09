@@ -20,6 +20,10 @@ namespace FEB.Service.DocumentStorage
             this.ConfigurationManager = configurationManager;
         }
 
+        public Task DeleteDocumentByDocumentID(string documentID)
+        {
+            throw new NotImplementedException();
+        }
 
         public override Task<List<Document>> GetDocuments()
         {

@@ -14,7 +14,7 @@ namespace FEB.Infrastructure.Repositories.Abstract
         Task<List<DocumentChunk>> GetDocumentChunks();
         Task AddDocument(Document document);
         void DeleteDocument(Document document);
-        void DeleteDocument(string documentID);
+        Task DeleteDocument(string documentID);
         Task<List<RelatedDocument>> GetRelatedDocuments(float[] questionVector, int knn);
     }
 }

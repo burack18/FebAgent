@@ -12,8 +12,8 @@ namespace FEBAgent.Domain
         public string DocumentName { get; set; } = string.Empty; 
         public string UserID { get; set; } = string.Empty;       
         public string ParentDocumentId { get; set; }
-        [JsonProperty(PropertyName = "/documents")]
-        public string PartitionKey { get; set; } = "documents";
+        [JsonProperty(PropertyName = "/UserID")]
+        public string PartitionKey => this.UserID;
         public string Url { get; set; }
         public DateTime CreatedOn { get; set; }
 

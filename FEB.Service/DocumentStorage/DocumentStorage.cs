@@ -61,7 +61,6 @@ namespace FEB.Service.DocumentStorage
                     UserID = userID,  // Extracted from blob path
                     Url = blobClient.Uri.ToString(), // Public URL
                     CreatedOn = blobItem.Properties.CreatedOn?.DateTime ?? DateTime.UtcNow,
-                    PartitionKey = "documents",
                 };
 
                 documents.Add(document);
@@ -106,7 +105,6 @@ namespace FEB.Service.DocumentStorage
                     UserID = userID,
                     Url = null, // set this if you have it
                     CreatedOn = DateTime.UtcNow,
-                    PartitionKey = "documents",
                 };
 
                 for (int i = 0; i < chunks.Count; i++)

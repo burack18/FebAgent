@@ -31,9 +31,7 @@ namespace FEB.Infrastructure.Repositories.Concrete
 
         public async Task<List<Document>> GetDocuments()
         {
-            var query = _container.GetItemLinqQueryable<Document>(true)
-                                 .Where(d => d.PartitionKey == "documents")
-                                 .ToFeedIterator();
+            var query = _container.GetItemLinqQueryable<Document>(true).ToFeedIterator();
 
 
             List<Document> results = new();
@@ -61,10 +59,19 @@ namespace FEB.Infrastructure.Repositories.Concrete
             //_dbContext.Documents.Remove(document);
         }
 
-        public void DeleteDocument(string documentID)
+        public async Task DeleteDocument(string documentID)
         {
-            //var document = _dbContext.Documents.FirstOrDefault(x => x.Id == documentID);
-            //DeleteDocument(document);
+            // Fetch the document by its ID to retrieve the UserID (partition key)
+            var document = _container.GetItemLinqQueryable<Document>(true)
+                                     .Where(d => d.Id == documentID)
+                                     .AsEnumerable()
+                                     .FirstOrDefault() ?? throw new Exception("Document not found");
+
+            // Now use the UserID as the partition key
+            var partitionKey = new Microsoft.Azure.Cosmos.PartitionKey(document.UserID);
+
+            // Delete the document using the document ID and UserID as the partition key
+            await _container.DeleteItemAsync<Document>(documentID, partitionKey);
         }
 
         public async Task<List<RelatedDocument>> GetRelatedDocuments(float[] questionVector, int knn)
