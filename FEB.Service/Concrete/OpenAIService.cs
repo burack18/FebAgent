@@ -27,7 +27,7 @@ namespace FEB.Service.Concrete
             _textEmbeddingGenerationService = textEmbeddingGenerationService;
             _documentRepository = documentRepository;
         }
-        public async Task<ChatMessageContent> Ask(UserMessage userMessage)
+        public async IAsyncEnumerable<string> Ask(UserMessage userMessage)
         {
             //var isSessionExpired = await _chatMessageService.IsSessionExpired(userMessage.SessionKey);
 
@@ -43,55 +43,52 @@ namespace FEB.Service.Concrete
             };
 
             _chatMessageService.AddChatMessage(message);
-            return await this.Ask(userMessage.Question, message.SessionKey);
-        }
-        public async Task<ChatMessageContent> Ask(string question, string sessionKey)
-        {
-            //var chatMessages = await _chatMessageService.GetChatMessages(sessionKey);
             var chatHistory = new ChatHistory();
-            //foreach (var chatMessage in chatMessages)
-            //{
-            //    chatHistory.Add(new ChatMessageContent
-            //    {
-            //        Content = chatMessage.Message,
-            //        Role = string.IsNullOrEmpty(chatMessage.UserID) ? AuthorRole.User : AuthorRole.Assistant
-            //    });
-            //}
-            var questionVector = await Embed([question]);
-            var relatedDocInfo=string.Empty;
+
+            var questionVector = await Embed([userMessage.Question]);
+            var relatedDocInfo = string.Empty;
+
             if (questionVector.Count > 0)
             {
-                var relatedDocuments =await  _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(), 2);
+                var relatedDocuments = await _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(), 3);
                 foreach (var d in relatedDocuments)
                 {
-                    relatedDocInfo += d.DocumentChunk.Content;
+                    relatedDocInfo += "\n" + d.DocumentChunk.Content;
                 }
             }
 
-            //OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
-            //{
-            //    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            //};
-      
-
-            // Add a system message to define the assistant's behavior
             chatHistory.AddSystemMessage("""
-                You are a helpful AI assistant. Provide concise and accurate responses. 
-                When responding, you may use the user's first name if available.
-                Related Document content is:
-                """+relatedDocInfo);
-            
-            chatHistory.AddUserMessage(question);
+        You are a helpful AI assistant. Only respond based on the given information. Do not use external knowledge or assumptions beyond the provided content.
+
+        Follow these 4 steps to answer accurately:
+
+        Read the user's question carefully. Identify the exact information being asked.
+
+        Scan the provided document content for relevant sections that address the question.
+
+        Extract only the necessary details from the document to form your answer.
+
+        Respond clearly and concisely, using only information found in the document. Do not infer or assume anything beyond what is written.
+
+        Related Document content is:
+        """ + relatedDocInfo);
+
+            chatHistory.AddUserMessage(userMessage.Question);
 
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
-            var response = await chatCompletionService.GetChatMessageContentAsync(
-                chatHistory,
-                //openAIPromptExecutionSettings,
-                kernel: _kernel
-            );
-            return response;
-        }
 
+            // 🔁 Stream the response content
+            await foreach (var content in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, kernel: _kernel))
+            {
+                if (content.Content != null)
+                {
+                    // Return the current chunk
+                    yield return content.Content;
+
+                }
+            }
+        }
+   
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)
         {
             IList<ReadOnlyMemory<float>> embeddings =

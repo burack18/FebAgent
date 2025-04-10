@@ -10,6 +10,7 @@
     <PackageReference Include="DocX" Version="4.0.25105.5786" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.44.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FEB.Infrastructure\FEB.Infrastructure.csproj" />

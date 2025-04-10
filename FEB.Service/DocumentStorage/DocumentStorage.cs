@@ -38,35 +38,35 @@ namespace FEB.Service.DocumentStorage
 
         public override async Task<List<Document>> GetDocuments()
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var documents = new List<Document>();
+            //var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            //var documents = new List<Document>();
+            return await this.DocumentRepository.GetDocuments();
+            //await foreach (BlobItem blobItem in containerClient.GetBlobsAsync(traits: BlobTraits.Metadata))
+            //{
 
-            await foreach (BlobItem blobItem in containerClient.GetBlobsAsync(traits: BlobTraits.Metadata))
-            {
+            //    var blobClient = containerClient.GetBlobClient(blobItem.Name);
 
-                var blobClient = containerClient.GetBlobClient(blobItem.Name);
+            //    // Extract UserID from blob name (assuming format: "userID/filename")
+            //    var parts = blobItem.Name.Split('/');
+            //    string userID = parts.Length > 1 ? parts[0] : "unknown";
 
-                // Extract UserID from blob name (assuming format: "userID/filename")
-                var parts = blobItem.Name.Split('/');
-                string userID = parts.Length > 1 ? parts[0] : "unknown";
-
-                blobItem.Metadata.TryGetValue("filename", out string filename);
-                blobItem.Metadata.TryGetValue("fileID", out string fileID);
+            //    blobItem.Metadata.TryGetValue("filename", out string filename);
+            //    blobItem.Metadata.TryGetValue("fileID", out string fileID);
 
 
-                var document = new Document
-                {
-                    Id = fileID,
-                    DocumentName = filename ?? "",
-                    UserID = userID,  // Extracted from blob path
-                    Url = blobClient.Uri.ToString(), // Public URL
-                    CreatedOn = blobItem.Properties.CreatedOn?.DateTime ?? DateTime.UtcNow,
-                };
+            //    var document = new Document
+            //    {
+            //        Id = fileID,
+            //        DocumentName = filename ?? "",
+            //        UserID = userID,  // Extracted from blob path
+            //        Url = blobClient.Uri.ToString(), // Public URL
+            //        CreatedOn = blobItem.Properties.CreatedOn?.DateTime ?? DateTime.UtcNow,
+            //    };
 
-                documents.Add(document);
-            }
+            //    documents.Add(document);
+            //}
 
-            return documents;
+            //return documents;
         }
 
         public async Task SaveDocument(string userID, IFormFile file)
@@ -94,7 +94,7 @@ namespace FEB.Service.DocumentStorage
 
                 using var doc = DocX.Load(memoryStream);
                 string documentText = doc.Text;
-                List<string> chunks = ChunkByWords(documentText, 100);
+                List<string> chunks = ChunkByWords(documentText, 500);
 
                 var vectors = await _openAIservice.Embed(chunks);
 
@@ -156,7 +156,7 @@ namespace FEB.Service.DocumentStorage
                 }
             }
 
-            if (currentChunk.Any())
+            if (currentChunk.Count != 0)
             {
                 chunks.Add(string.Join(" ", currentChunk));
             }
