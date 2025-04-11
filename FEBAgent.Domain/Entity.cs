@@ -13,5 +13,7 @@ namespace FEBAgent.Domain
         [JsonProperty("id")]
         public string Id { get; set; }
 
+        public DateTime CreatedOn { get; set; }
+
     }
 }

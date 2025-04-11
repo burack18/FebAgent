@@ -109,9 +109,11 @@ namespace FEB.Service.DocumentStorage
 
                 for (int i = 0; i < chunks.Count; i++)
                 {
+                    string id = Guid.NewGuid().ToString();
                     var documentChunk = new DocumentChunk
                     {
-                        Id = Guid.NewGuid().ToString(),
+                        Id = id,
+                        DocumentChunkID = id,
                         Content = chunks[i],
                         CreatedOn = DateTime.UtcNow,
                         Vector = vectors[i].ToArray(),

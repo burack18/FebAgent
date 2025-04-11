@@ -13,7 +13,6 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
-builder.Services.AddScoped<IUserService, InMemoryUserService>(); // Use AddScoped or AddTransient as appropriate
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddControllers();
@@ -45,10 +44,11 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true, // Check if the token is expired
         ClockSkew = TimeSpan.Zero // Remove default 5-minute clock skew
     };
+    
     // You can add event handlers here if needed (e.g., OnAuthenticationFailed, OnTokenValidated)
 });
 
-builder.Services.AddSingleton<OpenAIService>();
+
 builder.Services.AddSingleton<FebAgentContext>();
 
 var loggerFactory = LoggerFactory.Create(builder =>

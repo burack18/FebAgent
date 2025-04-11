@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
+using FEB.Infrastructure.Repositories.Abstract;
+using FEB.Infrastructure.Repositories.Concrete;
 
 namespace FEB.Infrastructure
 {
@@ -24,6 +26,8 @@ namespace FEB.Infrastructure
             var cosmosDbSettings = configuration
                 .GetSection("CosmosDb")
                 .Get<CosmosDbSettings>() ?? throw new Exception("CosmosDb Config is required");
+
+            services.AddSingleton<IUserRepository, UserRepository>();
 
             services.AddSingleton((provider) =>
             {

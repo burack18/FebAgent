@@ -8,7 +8,7 @@ namespace FEBAgent.Domain
 {
     public class DocumentChunk:Entity
     {
-        public int DocumentID { get; set; }
+        public string DocumentChunkID { get; set; }
         public string Content { get; set; } = string.Empty;
         public float[] Vector { get; set; } = Array.Empty<float>();
         public DateTime CreatedOn { get; set; }

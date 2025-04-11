@@ -27,23 +27,55 @@ namespace FEB.API.Controllers
                 return Unauthorized("Username and password required.");
             }
 
-            
-            var user = await _userService.GetUserAsync(loginRequest.Username);
 
-            if (user == null || user.Password != loginRequest.Password)
+            var user = await _userService.GetUserAsync(loginRequest.Username);
+            if(user == null)
             {
                 return Unauthorized("Invalid username or password.");
             }
 
+            bool isCorrectPassword = await _userService.CheckPassword(loginRequest.Username, loginRequest.Password);
 
-            var (tokenString, expiration) = _tokenService.GenerateToken(user.Username);
+            if (!isCorrectPassword)
+            {
+                return Unauthorized("Invalid username or password.");
+            }
+
+            var (tokenString, expiration) = _tokenService.GenerateToken(user.UserName);
 
             return Ok(new LoginResponse
             {
                 Token = tokenString,
                 Expiration = expiration,
-                Username = user.Username
+                Username = user.UserName
             });
+        }
+
+
+        [HttpPost("signup")]
+        [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> SignUp([FromBody] SignUpRequest signUpRequest)
+        {
+
+            var user = await _userService.GetUserAsync(signUpRequest.UserName);
+            if (user != null)
+            {
+                return Unauthorized("Username is already in use");
+            }
+
+            await _userService.AddUser(new Service.Dto.SignUpRequest()
+            {
+                UserName = signUpRequest.UserName,
+                Password = signUpRequest.Password,
+                Email = signUpRequest.Email,
+                FirstName = signUpRequest.FirstName,
+                LastName = signUpRequest.LastName,
+                UserID = signUpRequest.UserID,
+            });
+
+
+            return Ok();
         }
     }
 }

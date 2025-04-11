@@ -14,8 +14,9 @@ namespace FEBAgent.Domain
         public string ParentDocumentId { get; set; }
         [JsonProperty(PropertyName = "/UserID")]
         public string PartitionKey => this.UserID;
+
         public string Url { get; set; }
-        public DateTime CreatedOn { get; set; }
+   
 
         public virtual List<DocumentChunk> DocumentChunks { get; set; } = [];
 
