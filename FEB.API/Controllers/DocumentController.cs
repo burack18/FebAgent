@@ -1,6 +1,7 @@
 ﻿using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Service.Abstract;
 using FEBAgent.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ namespace FEB.API.Controllers
             _documentService = documentService;
             this.documentRepository = documentRepository;
         }
-
+        [Authorize]
         [HttpGet("")]
         public async Task<List<Document>> GetDocuments()
         {
@@ -29,6 +30,7 @@ namespace FEB.API.Controllers
             return await this._documentService.GetDocuments();
         }
 
+        [Authorize]
         [HttpPost("loadDocuments")]
         public async Task LoadDocument()
         {
@@ -49,6 +51,7 @@ namespace FEB.API.Controllers
                 }
             }
         }
+        [Authorize]
         [HttpDelete("{documentID}")]
         public async Task<IActionResult> DeleteDocument(string documentID)
         {

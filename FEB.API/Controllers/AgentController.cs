@@ -1,4 +1,5 @@
 ﻿using FEB.Service.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
@@ -15,7 +16,7 @@ namespace FEBAgent.Controllers
         {
             this.service = service;
         }
-
+        [Authorize]
         [HttpPost("ask")]
         public async Task Ask([FromBody] QuestionRequest req)
         {

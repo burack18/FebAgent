@@ -101,8 +101,12 @@ builder.Services.AddSwaggerGen(options => // Configure Swagger to use Bearer aut
 var app = builder.Build();
 app.UseCors("AllowSpecificOrigin");
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(); // Protected by if (env.IsDevelopment())
+}
+
 
 
 
@@ -112,7 +116,7 @@ app.UseSwaggerUI();
 // Add Authentication middleware BEFORE Authorization middleware
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapGet("/", () => "API is up and running!");
 app.MapControllers();
 
 app.Run();

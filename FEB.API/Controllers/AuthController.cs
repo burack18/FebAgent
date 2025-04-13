@@ -57,6 +57,7 @@ namespace FEB.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> SignUp([FromBody] SignUpRequest signUpRequest)
         {
+            throw new Exception("Not In Use");
 
             var user = await _userService.GetUserAsync(signUpRequest.UserName);
             if (user != null)
