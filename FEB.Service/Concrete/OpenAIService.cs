@@ -13,6 +13,7 @@ namespace FEB.Service.Concrete
 {
     public class OpenAIService
     {
+        private static Dictionary<string, ChatHistory> _chatHistory = new Dictionary<string, ChatHistory>();
         private Kernel _kernel;
         private IChatMessageService _chatMessageService;
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -43,7 +44,13 @@ namespace FEB.Service.Concrete
             };
 
             _chatMessageService.AddChatMessage(message);
-            var chatHistory = new ChatHistory();
+            var hasKey = OpenAIService._chatHistory.ContainsKey(message.UserID);
+            if (!hasKey)
+            {
+                OpenAIService._chatHistory.Add(message.UserID, new ChatHistory());
+            }
+
+            var chatHistory = OpenAIService._chatHistory[message.UserID];
 
             var questionVector = await Embed([userMessage.Question]);
             var relatedDocInfo = string.Empty;
@@ -87,6 +94,7 @@ namespace FEB.Service.Concrete
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
 
             string buffer = "";
+            string aiMessage = "";
             // Define characters that indicate a reasonable place to break the stream chunk
             char[] yieldChars = [' ', '\n', '\r', '\t', '.', ',', ';', ':', '!', '?', ')', ']']; // Added more punctuation
             int yieldLengthThreshold = 80; // Adjust as needed: Yield if buffer gets this long without a natural break
@@ -102,6 +110,8 @@ namespace FEB.Service.Concrete
                 // if (currentPart.StartsWith("markdown ")) { currentPart = currentPart.Substring("markdown ".Length); }
 
                 buffer += currentPart;
+                aiMessage += currentPart;
+
 
                 // Process the buffer to yield chunks ending at natural breaks
                 while (buffer.Length > 0) // Keep processing buffer until it's empty or no break found
@@ -150,8 +160,9 @@ namespace FEB.Service.Concrete
             {
                 yield return buffer;
             }
+            chatHistory.AddAssistantMessage(aiMessage);
         }
-   
+
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)
         {
             IList<ReadOnlyMemory<float>> embeddings =

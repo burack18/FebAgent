@@ -5,6 +5,9 @@ using FEB.Infrastructure.Repositories.Concrete;
 using FEB.Service.Abstract;
 using FEB.Service.Concrete;
 using FEBAgent.Domain;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
@@ -86,15 +89,37 @@ namespace FEB.Service.DocumentStorage
 
             foreach (var file in formFiles)
             {
+
                 // Process the document content with DocX
                 using var stream = file.OpenReadStream();
                 using var memoryStream = new MemoryStream();
                 await stream.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
+                List<string> chunks=new List<string>();
+                if (file.ContentType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                {
+                    using var doc = DocX.Load(memoryStream);
+                    string documentText = doc.Text;
+                    chunks = ChunkByWords(documentText, 500);
+                }
+                else if (file.ContentType == "application/pdf")
+                {
+                    string pdfText = "";
 
-                using var doc = DocX.Load(memoryStream);
-                string documentText = doc.Text;
-                List<string> chunks = ChunkByWords(documentText, 500);
+                    using (var pdfReader = new PdfReader(memoryStream))
+                    using (var pdfDoc = new PdfDocument(pdfReader))
+                    {
+                        for (int i = 1; i <= pdfDoc.GetNumberOfPages(); i++)
+                        {
+                            var strategy = new SimpleTextExtractionStrategy();
+                            string textFromPage = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(i), strategy);
+                            pdfText += textFromPage + Environment.NewLine;
+                        }
+                    }
+
+                    // Now chunk like before
+                    chunks = ChunkByWords(pdfText, 500);
+                }
 
                 var vectors = await _openAIservice.Embed(chunks);
 

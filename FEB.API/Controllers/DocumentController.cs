@@ -38,7 +38,8 @@ namespace FEB.API.Controllers
 
             foreach (var file in files)
             {
-                if (file.ContentType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                if (file.ContentType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                 || file.ContentType == "application/pdf")
                 {
                     // Save the document to the service
                     await _documentService.SaveDocument("U016061", file);
