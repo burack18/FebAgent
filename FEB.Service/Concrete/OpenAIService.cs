@@ -28,7 +28,7 @@ namespace FEB.Service.Concrete
             _textEmbeddingGenerationService = textEmbeddingGenerationService;
             _documentRepository = documentRepository;
         }
-        public async IAsyncEnumerable<string> Ask(UserMessage userMessage)
+        public async Task<string> Ask(UserMessage userMessage)
         {
             //var isSessionExpired = await _chatMessageService.IsSessionExpired(userMessage.SessionKey);
 
@@ -93,74 +93,17 @@ namespace FEB.Service.Concrete
 
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
 
-            string buffer = "";
-            string aiMessage = "";
-            // Define characters that indicate a reasonable place to break the stream chunk
-            char[] yieldChars = [' ', '\n', '\r', '\t', '.', ',', ';', ':', '!', '?', ')', ']']; // Added more punctuation
-            int yieldLengthThreshold = 80; // Adjust as needed: Yield if buffer gets this long without a natural break
+            // No buffer needed for non-streaming
+            // string buffer = ""; 
+            string aiMessage = ""; // Accumulate the full response here
+                                   // No yield-related variables needed
+                                   // char[] yieldChars = ...
+                                   // int yieldLengthThreshold = ...
 
-            await foreach (var content in chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, kernel: _kernel))
-            {
-                if (string.IsNullOrEmpty(content.Content)) continue;
-
-                // IMPORTANT: Make sure any necessary prefix removal (like "markdown ")
-                // happens HERE to content.Content before adding to buffer, if still needed.
-                string currentPart = content.Content;
-                // Example prefix removal (add if needed):
-                // if (currentPart.StartsWith("markdown ")) { currentPart = currentPart.Substring("markdown ".Length); }
-
-                buffer += currentPart;
-                aiMessage += currentPart;
-
-
-                // Process the buffer to yield chunks ending at natural breaks
-                while (buffer.Length > 0) // Keep processing buffer until it's empty or no break found
-                {
-                    int breakIndex = buffer.LastIndexOfAny(yieldChars);
-
-                    // Option 1: Found a natural break point somewhat recently
-                    // We check breakIndex > 0 to avoid yielding just punctuation/whitespace
-                    if (breakIndex > 0 && breakIndex < buffer.Length - 1)
-                    {
-                        // Yield up to and including the break character
-                        string partToYield = buffer.Substring(0, breakIndex + 1);
-                        buffer = buffer.Substring(breakIndex + 1); // Keep the remainder
-                        if (!string.IsNullOrEmpty(partToYield))
-                        {
-                            yield return partToYield;
-                        }
-                    }
-                    // Option 2: Buffer is long, force yield (split at threshold, prefer not breaking words if possible)
-                    else if (buffer.Length >= yieldLengthThreshold)
-                    {
-                        // Try to find a space near the threshold to avoid breaking mid-word
-                        int splitPoint = buffer.LastIndexOf(' ', yieldLengthThreshold - 1);
-                        if (splitPoint <= 0) // No space found near threshold, just split at threshold
-                        {
-                            splitPoint = yieldLengthThreshold;
-                        }
-
-                        string partToYield = buffer.Substring(0, splitPoint);
-                        buffer = buffer.Substring(splitPoint); // Keep the remainder
-                        if (!string.IsNullOrEmpty(partToYield))
-                        {
-                            yield return partToYield;
-                        }
-                    }
-                    // Option 3: No natural break found yet and buffer is not too long, wait for more content
-                    else
-                    {
-                        break; // Exit the while loop and wait for the next chunk from the AI
-                    }
-                }
-            }
-
-            // Yield any remaining content in the buffer after the AI stream finishes
-            if (buffer.Length > 0)
-            {
-                yield return buffer;
-            }
-            chatHistory.AddAssistantMessage(aiMessage);
+            var respnse = await chatCompletionService.GetChatMessageContentAsync(chatHistory, kernel: _kernel);
+                
+            chatHistory.AddAssistantMessage(respnse.Content);
+            return respnse.Content;
         }
 
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)
