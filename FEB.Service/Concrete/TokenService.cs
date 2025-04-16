@@ -37,7 +37,7 @@ namespace FEB.Service.Concrete
                 // claims.Add(new Claim(ClaimTypes.Role, "Admin"));
             }
 
-            var expires = DateTime.UtcNow.AddMinutes(60); // Token expiration time (e.g., 1 hour)
+            var expires = DateTime.Now.AddMinutes(60); // Token expiration time (e.g., 1 hour)
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

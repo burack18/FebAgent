@@ -52,6 +52,7 @@ namespace FEB.API.Controllers
                 }
             }
         }
+
         [Authorize]
         [HttpDelete("{documentID}")]
         public async Task<IActionResult> DeleteDocument(string documentID)

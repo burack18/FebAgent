@@ -64,10 +64,21 @@ builder.Services.AddService(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+    options.AddPolicy("FEBPolicy",
+        policy =>
+        {
+            policy.WithOrigins(
+                      "https://feb-agent-fcgfhyeza0c7hdak.northeurope-01.azurewebsites.net", // Your Azure frontend URL (use HTTPS if applicable)
+                      "http://localhost:3000"  // Common localhost for frontend dev (adjust port if needed)
+                  )
+                  .AllowAnyHeader() // Allows common headers
+                  .AllowAnyMethod(); // Allows common HTTP methods (GET, POST, PUT, DELETE, etc.)
+            // If you were sending credentials like cookies or using Authorization headers
+            // checked by the browser itself (less common for Bearer tokens handled by JS),
+            // you would also need .AllowCredentials(), but WithOrigins(...) MUST be used
+            // instead of AllowAnyOrigin() when credentials are allowed.
+        });
 });
-
 
 
 
@@ -99,7 +110,8 @@ builder.Services.AddSwaggerGen(options => // Configure Swagger to use Bearer aut
 
 
 var app = builder.Build();
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("FEBPolicy"); // Apply the policy
+
 
 if (app.Environment.IsDevelopment())
 {
