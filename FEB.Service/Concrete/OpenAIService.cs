@@ -65,8 +65,8 @@ namespace FEB.Service.Concrete
             }
 
             chatHistory.AddSystemMessage("""
-        You are a helpful AI assistant. Your primary goal is to answer user questions based *only* on the provided "Related Document content". Do not use any external knowledge or make assumptions beyond the provided text.
-
+        You are a helpful AI assistant. You can use available functions and tools to answer user questions. Use them when necessary to provide accurate and helpful responses.
+        
         **Formatting Guidelines:**
         * Format your response using Markdown syntax when appropriate to improve readability.
         * Use bold (`**text**`) for emphasis on key terms, titles, or labels. Make sure the asterisks directly touch the word (`**Word**`, not `** Word **`).
@@ -93,6 +93,11 @@ namespace FEB.Service.Concrete
 
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
 
+            OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
+            {
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+            };
+
             // No buffer needed for non-streaming
             // string buffer = ""; 
             string aiMessage = ""; // Accumulate the full response here
@@ -100,10 +105,10 @@ namespace FEB.Service.Concrete
                                    // char[] yieldChars = ...
                                    // int yieldLengthThreshold = ...
 
-            var respnse = await chatCompletionService.GetChatMessageContentAsync(chatHistory, kernel: _kernel);
-                
-            chatHistory.AddAssistantMessage(respnse.Content);
-            return respnse.Content;
+            var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory, kernel: _kernel, executionSettings: openAIPromptExecutionSettings);
+
+            chatHistory.AddAssistantMessage(response.Content);
+            return response.Content;
         }
 
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)

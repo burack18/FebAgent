@@ -100,7 +100,7 @@ namespace FEB.Service.DocumentStorage
                 {
                     using var doc = DocX.Load(memoryStream);
                     string documentText = doc.Text;
-                    chunks = ChunkByWords(documentText, 500);
+                    chunks = ChunkByWords(documentText, 400);
                 }
                 else if (file.ContentType == "application/pdf")
                 {
@@ -131,7 +131,7 @@ namespace FEB.Service.DocumentStorage
                     Url = null, // set this if you have it
                     CreatedOn = DateTime.UtcNow,
                 };
-
+                List<DocumentChunk> docChunks = [];
                 for (int i = 0; i < chunks.Count; i++)
                 {
                     string id = Guid.NewGuid().ToString();
@@ -139,14 +139,16 @@ namespace FEB.Service.DocumentStorage
                     {
                         Id = id,
                         DocumentChunkID = id,
+                        DocumentID = document.Id,
                         Content = chunks[i],
                         CreatedOn = DateTime.UtcNow,
                         Vector = vectors[i].ToArray(),
                     };
-                    document.DocumentChunks.Add(documentChunk);
+                    docChunks.Add(documentChunk);
                 }
 
                 await _documentRepository.AddDocument(document); // use the AddDocumentAsync method you built
+                await _documentRepository.AddChunks(docChunks);
 
                 stream.Position = 0;
 

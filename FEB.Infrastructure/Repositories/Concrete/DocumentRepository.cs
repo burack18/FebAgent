@@ -18,7 +18,8 @@ namespace FEB.Infrastructure.Repositories.Concrete
     public class DocumentRepository : IDocumentRepository
     {
         private CosmosClient _client;
-        private Container _container;
+        private Container _docContainer;
+        private Container _chunkContainer;
 
         public DocumentRepository(CosmosClient client, IConfiguration configuration)
         {
@@ -26,12 +27,13 @@ namespace FEB.Infrastructure.Repositories.Concrete
                 .GetSection("CosmosDb")
                 .Get<CosmosDbSettings>() ?? throw new Exception("CosmosDB configuration Required");
             _client = client;
-            _container = _client.GetContainer(cosmosConfig.DatabaseName, "documents");
+            _docContainer = _client.GetContainer(cosmosConfig.DatabaseName, "documents");
+            _chunkContainer = _client.GetContainer(cosmosConfig.DatabaseName, "chunks");
         }
 
         public async Task<List<Document>> GetDocuments()
         {
-            var query = _container.GetItemLinqQueryable<Document>(true).ToFeedIterator();
+            var query = _docContainer.GetItemLinqQueryable<Document>(true).ToFeedIterator();
 
 
             List<Document> results = new();
@@ -50,7 +52,7 @@ namespace FEB.Infrastructure.Repositories.Concrete
             if (document == null) throw new ArgumentNullException(nameof(document));
 
             document.CreatedOn = DateTime.UtcNow;
-            await _container.CreateItemAsync<Document>(document);
+            await _docContainer.CreateItemAsync<Document>(document);
         }
 
         public void DeleteDocument(Document? document)
@@ -62,7 +64,7 @@ namespace FEB.Infrastructure.Repositories.Concrete
         public async Task DeleteDocument(string documentID)
         {
             // Fetch the document by its ID to retrieve the UserID (partition key)
-            var document = _container.GetItemLinqQueryable<Document>(true)
+            var document = _docContainer.GetItemLinqQueryable<Document>(true)
                                      .Where(d => d.Id == documentID)
                                      .AsEnumerable()
                                      .FirstOrDefault() ?? throw new Exception("Document not found");
@@ -71,7 +73,8 @@ namespace FEB.Infrastructure.Repositories.Concrete
             var partitionKey = new Microsoft.Azure.Cosmos.PartitionKey(document.UserID);
 
             // Delete the document using the document ID and UserID as the partition key
-            await _container.DeleteItemAsync<Document>(documentID, partitionKey);
+            await _docContainer.DeleteItemAsync<Document>(documentID, partitionKey);
+            await DeleteChunksByDocumentID(documentID);
         }
 
         public async Task<List<RelatedDocument>> GetRelatedDocuments(float[] questionVector, int knn)
@@ -104,9 +107,57 @@ namespace FEB.Infrastructure.Repositories.Concrete
 
         public async Task<List<DocumentChunk>> GetDocumentChunks()
         {
-            var documents = await GetDocuments();
+            var query = _chunkContainer
+                 .GetItemLinqQueryable<DocumentChunk>(allowSynchronousQueryExecution: false)
+                 .ToFeedIterator();
 
-            return [.. documents.SelectMany(x => x.DocumentChunks)];
+            var results = new List<DocumentChunk>();
+
+            while (query.HasMoreResults)
+            {
+                var response = await query.ReadNextAsync();
+                results.AddRange(response);
+            }
+
+            return results;
+        }
+
+        public async Task<List<DocumentChunk>> GetDocumentChunks(string docID)
+        {
+            var query = _chunkContainer
+                 .GetItemLinqQueryable<DocumentChunk>(allowSynchronousQueryExecution: false)
+                 .Where(x => x.DocumentID == docID)
+                 .ToFeedIterator();
+
+            var results = new List<DocumentChunk>();
+
+            while (query.HasMoreResults)
+            {
+                var response = await query.ReadNextAsync();
+                results.AddRange(response);
+            }
+
+            return results;
+        }
+
+        public async Task AddChunks(List<DocumentChunk> docChunks)
+        {
+            if (docChunks == null) throw new ArgumentNullException(nameof(docChunks));
+
+            var tasks = docChunks.Select(chunk =>
+                _chunkContainer.CreateItemAsync<DocumentChunk>(chunk));
+
+            await Task.WhenAll(tasks);
+        }
+
+        public async Task DeleteChunksByDocumentID(string docID)
+        {
+            var chunks = await GetDocumentChunks(docID);
+            var partitionKey = new Microsoft.Azure.Cosmos.PartitionKey(docID);
+            foreach (var chunk in chunks)
+            {
+                await _chunkContainer.DeleteItemAsync<DocumentChunk>(chunk.Id, partitionKey);
+            }
         }
     }
 }

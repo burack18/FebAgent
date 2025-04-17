@@ -12,6 +12,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Infrastructure.Repositories.Concrete;
+using FEB.Service.Plugins;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace FEB.Infrastructure
 {
@@ -41,19 +43,24 @@ namespace FEB.Infrastructure
                 return cosmosClient;
 
             });
+        
             services.AddOpenAIChatCompletion(modelId: "gpt-4o-mini", apiKey: api_key);
-        #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             services.AddOpenAITextEmbeddingGeneration(
-                modelId: "text-embedding-ada-002",       
+                modelId: "text-embedding-ada-002",
                 apiKey: api_key
             );
-        #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             services.AddTransient((serviceProvider) =>
             {
-
-                return new Kernel(serviceProvider);
+                var kernel = new Kernel(serviceProvider);
+                var plugin = kernel.CreatePluginFromType<OpenAIPlugin>("OpenAIPlugin");
+                kernel.Plugins.Add(plugin);
+                return kernel;
             });
+
             return services;
         }
     }

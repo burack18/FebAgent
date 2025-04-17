@@ -17,8 +17,5 @@ namespace FEBAgent.Domain
 
         public string Url { get; set; }
    
-
-        public virtual List<DocumentChunk> DocumentChunks { get; set; } = [];
-
     }
 }
