@@ -68,7 +68,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins(
-                      "https://feb-agent-fcgfhyeza0c7hdak.northeurope-01.azurewebsites.net", // Your Azure frontend URL (use HTTPS if applicable)
+                      "https://black-grass-0e6038003.6.azurestaticapps.net", // Your Azure frontend URL (use HTTPS if applicable)
                       "http://localhost:3000"  // Common localhost for frontend dev (adjust port if needed)
                   )
                   .AllowAnyHeader() // Allows common headers
