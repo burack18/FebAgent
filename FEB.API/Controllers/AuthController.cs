@@ -29,7 +29,7 @@ namespace FEB.API.Controllers
 
 
             var user = await _userService.GetUserAsync(loginRequest.Username);
-            if(user == null)
+            if (user == null)
             {
                 return Unauthorized("Invalid username or password.");
             }
@@ -47,7 +47,8 @@ namespace FEB.API.Controllers
             {
                 Token = tokenString,
                 Expiration = expiration,
-                Username = user.UserName
+                Username = user.UserName,
+                UserID = user.Id,
             });
         }
 

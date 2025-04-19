@@ -31,8 +31,9 @@ namespace FEB.Service
             services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
             services.AddSingleton<IChatMessageService, ChatMessageService>();
             services.AddSingleton<IUserService,UserService>();
+            services.AddSingleton<ISystemMessageService, SystemMessageService>();
             services.AddSingleton<OpenAIService>();
-
+            
 
             services.AddSingleton(new BlobServiceClient(conn));
             return services;

@@ -1,4 +1,5 @@
 ﻿using FEB.Infrastructure.Repositories.Abstract;
+using FEB.Infrastructure.Repositories.Concrete;
 using FEB.Service.Abstract;
 using FEB.Service.Dto;
 using FEBAgent.Domain;
@@ -19,14 +20,16 @@ namespace FEB.Service.Concrete
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private ITextEmbeddingGenerationService _textEmbeddingGenerationService;
         private readonly IDocumentRepository _documentRepository;
+        private readonly ISystemMessageRepository _systemMessageRepository;
 
-        public OpenAIService(Kernel kernel, IChatMessageService chatMessageService, ITextEmbeddingGenerationService textEmbeddingGenerationService, IDocumentRepository documentRepository)
+        public OpenAIService(Kernel kernel, IChatMessageService chatMessageService, ITextEmbeddingGenerationService textEmbeddingGenerationService, IDocumentRepository documentRepository, ISystemMessageRepository systemMessageRepository)
         {
 #pragma warning restore SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _kernel = kernel;
             _chatMessageService = chatMessageService;
             _textEmbeddingGenerationService = textEmbeddingGenerationService;
             _documentRepository = documentRepository;
+            _systemMessageRepository = systemMessageRepository;
         }
         public async Task<string> Ask(UserMessage userMessage)
         {
@@ -55,6 +58,8 @@ namespace FEB.Service.Concrete
             var questionVector = await Embed([userMessage.Question]);
             var relatedDocInfo = string.Empty;
 
+
+
             if (questionVector.Count > 0)
             {
                 var relatedDocuments = await _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(), 3);
@@ -63,10 +68,10 @@ namespace FEB.Service.Concrete
                     relatedDocInfo += "\n" + d.DocumentChunk.Content;
                 }
             }
-
-            chatHistory.AddSystemMessage("""
+            var systemMessage = await _systemMessageRepository.GetSystemMessage();
+            var systemMessageFormatted = string.Format("""
+        {{0}}
         You are a helpful AI assistant. You can use available functions and tools to answer user questions. Use them when necessary to provide accurate and helpful responses.
-        
         **Formatting Guidelines:**
         * Format your response using Markdown syntax when appropriate to improve readability.
         * Use bold (`**text**`) for emphasis on key terms, titles, or labels. Make sure the asterisks directly touch the word (`**Word**`, not `** Word **`).
@@ -87,8 +92,9 @@ namespace FEB.Service.Concrete
         5. Apply Markdown formatting (bolding, lists, links) where it enhances readability, following the guidelines above.
         
         Related Document Content:
-        """ + relatedDocInfo);
-
+        {1}
+        """, systemMessage?.Message ?? string.Empty, relatedDocInfo);
+            chatHistory.AddSystemMessage(systemMessageFormatted);
             chatHistory.AddUserMessage(userMessage.Question);
 
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
@@ -107,8 +113,8 @@ namespace FEB.Service.Concrete
 
             var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory, kernel: _kernel, executionSettings: openAIPromptExecutionSettings);
 
-            chatHistory.AddAssistantMessage(response.Content);
-            return response.Content;
+            chatHistory.AddAssistantMessage(response?.Content ?? string.Empty);
+            return response?.Content ?? string.Empty;
         }
 
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)

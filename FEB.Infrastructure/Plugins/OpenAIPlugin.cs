@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FEB.Service.Plugins
+namespace FEB.Infrastructure.Plugins
 {
-    public class OpenAIPlugin
+    public class OpenAIPlugin:IAIPlugin
     {
+        
         [KernelFunction]
         [Description("Returns the current date and time of the user.")]
         public DateTime GetCurrentTime()

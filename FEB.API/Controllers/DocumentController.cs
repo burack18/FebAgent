@@ -2,15 +2,12 @@
 using FEB.Service.Abstract;
 using FEBAgent.Domain;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Xceed.Words.NET;
 
 namespace FEB.API.Controllers
 {
-    [Route("api/v1/documents")]
     [ApiController]
+    [Route("api/v1/documents")]
     public class DocumentController : ControllerBase
     {
 
