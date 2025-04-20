@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +19,7 @@ namespace FEB.Infrastructure.Repositories.Concrete
     {
         private CosmosClient _client;
         private Container _container;
+
         public UserRepository(CosmosClient client, IConfiguration configuration)
         {
             var cosmosConfig = configuration
@@ -86,6 +88,8 @@ namespace FEB.Infrastructure.Repositories.Concrete
 
             return results;
         }
+
+
 
         public async Task<UserDto?> GetUserAsync(string username)
         {

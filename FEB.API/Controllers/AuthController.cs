@@ -1,6 +1,7 @@
 ﻿using FEB.API.Dto;
 using FEB.Service.Abstract;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FEB.API.Controllers
 {
@@ -41,7 +42,12 @@ namespace FEB.API.Controllers
                 return Unauthorized("Invalid username or password.");
             }
 
-            var (tokenString, expiration) = _tokenService.GenerateToken(user.UserName);
+            List<Claim> claims = [
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Name, user.UserName)
+        ];
+            var (tokenString, expiration) = _tokenService.GenerateToken(user.UserName,claims);
 
             return Ok(new LoginResponse
             {

@@ -19,5 +19,6 @@ namespace FEB.Infrastructure.Repositories.Abstract
         Task<bool> CheckPassword(string username, string password);
         Task<bool> Verify(string storedPassword, string password);
         Task<string> BycrptPassword(string password);
+
     }
 }

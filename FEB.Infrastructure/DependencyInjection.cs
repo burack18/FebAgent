@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;k
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +13,6 @@ using Microsoft.SemanticKernel.Embeddings;
 using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Infrastructure.Repositories.Concrete;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using FEB.Infrastructure.Plugins;
 
 namespace FEB.Infrastructure
 {
@@ -31,7 +30,7 @@ namespace FEB.Infrastructure
 
             services.AddSingleton<IUserRepository, UserRepository>();
             services.AddSingleton<ISystemMessageRepository, SystemMessageRepository>();
-            services.AddSingleton<IAIPlugin, OpenAIPlugin>();
+
             
             services.AddSingleton((provider) =>
             {
@@ -46,23 +45,7 @@ namespace FEB.Infrastructure
 
             });
         
-            services.AddOpenAIChatCompletion(modelId: "gpt-4o-mini", apiKey: api_key);
 
-#pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            services.AddOpenAITextEmbeddingGeneration(
-                modelId: "text-embedding-ada-002",
-                apiKey: api_key
-            );
-#pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-            services.AddTransient((serviceProvider) =>
-            {
-                var kernel = new Kernel(serviceProvider);
-
-                var plugin = kernel.CreatePluginFromType<OpenAIPlugin>("OpenAIPlugin");
-                kernel.Plugins.Add(plugin);
-                return kernel;
-            });
 
             return services;
         }

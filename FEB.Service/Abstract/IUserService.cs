@@ -13,5 +13,7 @@ namespace FEB.Service.Abstract
         Task<UserDto?> GetUserAsync(string username);
         Task<bool> CheckPassword(string username, string password);
         Task AddUser(Service.Dto.SignUpRequest signUpRequest);
+        Task<UserDto?> GetCurrentUser();
+
     }
 }

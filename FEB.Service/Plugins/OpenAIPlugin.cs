@@ -1,16 +1,26 @@
-﻿using Microsoft.SemanticKernel;
+﻿using FEB.Infrastructure.Dto;
+using FEB.Infrastructure.Repositories.Abstract;
+using FEB.Service.Abstract;
+using Microsoft.SemanticKernel;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FEB.Infrastructure.Plugins
+namespace FEB.Service.Plugins
 {
     public class OpenAIPlugin:IAIPlugin
     {
-        
+        private readonly IUserService _userService;
+
+        public OpenAIPlugin(IUserService userService)
+        {
+            _userService = userService;
+        }
+
         [KernelFunction]
         [Description("Returns the current date and time of the user.")]
         public DateTime GetCurrentTime()
@@ -21,9 +31,9 @@ namespace FEB.Infrastructure.Plugins
 
         [KernelFunction]
         [Description("Returns the current user information Async.")]
-        public async Task<UserInfo> GetCurrentUserInformation()
+        public async Task<UserDto?> GetCurrentUserInformation()
         {
-            return await this.GetUserInfoAsync() ;
+            return await _userService.GetCurrentUser();
         }
         [KernelFunction]
         [Description("Creates an appointment for the current user. Automatically uses GetCurrentUserInformation to get the username. Does not require a date or time.")]
@@ -32,22 +42,10 @@ namespace FEB.Infrastructure.Plugins
             var d = username.ToUpper();
             return true;
         }
-        public struct UserInfo
-        {
-            public string UserName { get; set; }
-            public string UserEmail { get; set; }
-            public string UserRole { get; set; }
-        }
 
-        public async Task<UserInfo> GetUserInfoAsync()
+        public async Task<UserDto?> GetUserInfoAsync(string username)
         {
-            var info = new UserInfo
-            {
-                UserEmail = "Omerfaruk2695@gmail.com",
-                UserName = "burack18",
-                UserRole = "Admin"
-            };
-            return await Task.FromResult(info);
+            return await _userService.GetUserAsync(username);
         }
     }
 }

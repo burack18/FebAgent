@@ -107,6 +107,7 @@ builder.Services.AddSwaggerGen(options => // Configure Swagger to use Bearer aut
     }});
 });
 
+builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();

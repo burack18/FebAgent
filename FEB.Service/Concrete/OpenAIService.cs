@@ -71,7 +71,11 @@ namespace FEB.Service.Concrete
             var systemMessage = await _systemMessageRepository.GetSystemMessage();
             var systemMessageFormatted = string.Format("""
         {{0}}
-        You are a helpful AI assistant. You can use available functions and tools to answer user questions. Use them when necessary to provide accurate and helpful responses.
+
+        You are a helpful AI assistant. You can use available functions and tools to answer user questions. Always use them when they can improve accuracy or provide helpful responses.
+        If a function provides the required information, use it without asking the user for unnecessary input. Only ask the user for parameters that are not already available or cannot be inferred.
+        If the user's identity or context is needed and a function can retrieve it, use that function instead of asking the user directly.
+        
         **Formatting Guidelines:**
         * Format your response using Markdown syntax when appropriate to improve readability.
         * Use bold (`**text**`) for emphasis on key terms, titles, or labels. Make sure the asterisks directly touch the word (`**Word**`, not `** Word **`).

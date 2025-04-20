@@ -6,6 +6,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Azure.Cosmos.Serialization.HybridRow.Schemas;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +91,10 @@ namespace FEB.Infrastructure.Repositories.Concrete
                 .OrderByDescending(x => x.Similarity)
                 .Take(knn)
                 .ToList();
+            foreach (var d in relatedDocs)
+            {
+                Console.WriteLine($"S=>{d.Similarity} id=>{d.DocumentChunk.Id}");
+            }
             return relatedDocs;
         }
 
