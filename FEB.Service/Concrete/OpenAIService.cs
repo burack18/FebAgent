@@ -7,8 +7,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Embeddings;
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace FEB.Service.Concrete
 {
@@ -53,9 +55,11 @@ namespace FEB.Service.Concrete
                 OpenAIService._chatHistory.Add(message.UserID, new ChatHistory());
             }
 
+            var enrichedQuestion = await EnrichQuestion(userMessage.Question);
+
             var chatHistory = OpenAIService._chatHistory[message.UserID];
 
-            var questionVector = await Embed([userMessage.Question]);
+            var questionVector = await Embed([.. enrichedQuestion, userMessage.Question]);
             var relatedDocInfo = string.Empty;
 
 
@@ -126,6 +130,50 @@ namespace FEB.Service.Concrete
             IList<ReadOnlyMemory<float>> embeddings =
                         await _textEmbeddingGenerationService.GenerateEmbeddingsAsync(chunks);
             return embeddings;
+        }
+
+        private async Task<List<string>> EnrichQuestion(string question)
+        {
+            var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+            var history = new ChatHistory();
+
+            history.AddSystemMessage("You are a helpful assistant that only returns JSON.");
+            history.AddUserMessage($"""
+                                    Generate 5 related questions to the following. 
+                                    Return only a JSON array of strings, with no text before or after. 
+                                    Do not say anything else. 
+                                    Question: "{question}"
+                                    """);
+            var response = await chatCompletionService.GetChatMessageContentAsync(
+                history,
+                kernel: _kernel);
+
+            var enrichedQuestions = ExtractQuestionsFromResponse(response?.Content ?? string.Empty);
+
+            return enrichedQuestions;
+        }
+
+        private List<string> ExtractQuestionsFromResponse(string response)
+        {
+            // Try to find a JSON array in the response
+            var match = Regex.Match(response, @"\[[\s\S]*?\]");
+
+            if (match.Success)
+            {
+                try
+                {
+                    // Deserialize using Newtonsoft.Json
+                    return JsonConvert.DeserializeObject<List<string>>(match.Value) ?? [];
+                }
+                catch (JsonException ex)
+                {
+                    // Optional: log or handle deserialization issue
+                    Console.WriteLine($"JSON parse error: {ex.Message}");
+                }
+            }
+
+            // Return empty list if parsing failed or no match found
+            return new List<string>();
         }
     }
 }
