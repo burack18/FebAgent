@@ -59,14 +59,16 @@ namespace FEB.Service.Concrete
 
             var chatHistory = OpenAIService._chatHistory[message.UserID];
 
-            var questionVector = await Embed([.. enrichedQuestion, userMessage.Question]);
+            var questionVector = await Embed([userMessage.Question]);
+            var t = questionVector[0].ToArray();
+            //var questionVector = await Embed([.. enrichedQuestion, userMessage.Question]);
             var relatedDocInfo = string.Empty;
 
 
 
             if (questionVector.Count > 0)
             {
-                var relatedDocuments = await _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(), 3);
+                var relatedDocuments = await _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(),5);
                 foreach (var d in relatedDocuments)
                 {
                     relatedDocInfo += "\n" + d.DocumentChunk.Content;

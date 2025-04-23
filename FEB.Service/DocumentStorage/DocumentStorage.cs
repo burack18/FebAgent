@@ -100,7 +100,7 @@ namespace FEB.Service.DocumentStorage
                 {
                     using var doc = DocX.Load(memoryStream);
                     string documentText = doc.Text;
-                    chunks = ChunkByWords(documentText, 400);
+                    chunks = ChunkByWords(documentText, 100);
                 }
                 else if (file.ContentType == "application/pdf")
                 {
@@ -118,7 +118,7 @@ namespace FEB.Service.DocumentStorage
                     }
 
                     // Now chunk like before
-                    chunks = ChunkByWords(pdfText, 500);
+                    chunks = ChunkByWords(pdfText, 100);
                 }
 
                 var vectors = await _openAIservice.Embed(chunks);
