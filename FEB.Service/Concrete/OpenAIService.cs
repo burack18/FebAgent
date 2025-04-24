@@ -1,4 +1,5 @@
-﻿using FEB.Infrastructure.Repositories.Abstract;
+﻿using FEB.Infrastructure.Dto;
+using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Infrastructure.Repositories.Concrete;
 using FEB.Service.Abstract;
 using FEB.Service.Dto;
@@ -59,20 +60,23 @@ namespace FEB.Service.Concrete
 
             var chatHistory = OpenAIService._chatHistory[message.UserID];
 
-            var questionVector = await Embed([userMessage.Question]);
-            var t = questionVector[0].ToArray();
-            //var questionVector = await Embed([.. enrichedQuestion, userMessage.Question]);
+            var questionVectors = await Embed([.. enrichedQuestion, userMessage.Question]);
             var relatedDocInfo = string.Empty;
 
 
-
-            if (questionVector.Count > 0)
+            List<RelatedDocument> relatedDocumentsCollection = [];
+            if (questionVectors.Count > 0)
             {
-                var relatedDocuments = await _documentRepository.GetRelatedDocuments(questionVector[0].ToArray(),5);
-                foreach (var d in relatedDocuments)
+                var tasks = questionVectors.Select(x => Task.Run(async () =>
                 {
-                    relatedDocInfo += "\n" + d.DocumentChunk.Content;
-                }
+                    var relatedDocuments = await _documentRepository.GetRelatedDocuments(x.ToArray(), 2);
+                    relatedDocumentsCollection.AddRange(relatedDocuments);
+                }));
+                await Task.WhenAll(tasks);
+            }
+            foreach (var d in relatedDocumentsCollection.DistinctBy(x => x.DocumentChunk.Id))
+            {
+                relatedDocInfo += "\n" + d.DocumentChunk.Content;
             }
             var systemMessage = await _systemMessageRepository.GetSystemMessage();
             var systemMessageFormatted = string.Format("""
