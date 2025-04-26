@@ -34,7 +34,7 @@ namespace FEB.Service.Concrete
             _documentRepository = documentRepository;
             _systemMessageRepository = systemMessageRepository;
         }
-        public async Task<string> Ask(UserMessage userMessage)
+        public async Task<string> Ask(UserMessage userMessage, Constants.AgentService service)
         {
             //var isSessionExpired = await _chatMessageService.IsSessionExpired(userMessage.SessionKey);
 
@@ -56,7 +56,7 @@ namespace FEB.Service.Concrete
                 OpenAIService._chatHistory.Add(message.UserID, new ChatHistory());
             }
 
-            var enrichedQuestion = await EnrichQuestion(userMessage.Question);
+            var enrichedQuestion = await EnrichQuestion(userMessage.Question,service);
 
             var chatHistory = OpenAIService._chatHistory[message.UserID];
 
@@ -105,13 +105,15 @@ namespace FEB.Service.Concrete
         4. Construct a clear and concise response using the extracted information ONLY.
         5. Apply Markdown formatting (bolding, lists, links) where it enhances readability, following the guidelines above.
         
+
         Related Document Content:
         {1}
         """, systemMessage?.Message ?? string.Empty, relatedDocInfo);
             chatHistory.AddSystemMessage(systemMessageFormatted);
             chatHistory.AddUserMessage(userMessage.Question);
 
-            var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+            //var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>("openai-chat");
+            var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>(service.ToService());
 
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
@@ -138,9 +140,9 @@ namespace FEB.Service.Concrete
             return embeddings;
         }
 
-        private async Task<List<string>> EnrichQuestion(string question)
+        private async Task<List<string>> EnrichQuestion(string question, Constants.AgentService service)
         {
-            var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
+            var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>(service.ToService());
             var history = new ChatHistory();
 
             history.AddSystemMessage("You are a helpful assistant that only returns JSON.");

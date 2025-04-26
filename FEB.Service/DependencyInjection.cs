@@ -15,6 +15,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Connectors.Google;
 
 namespace FEB.Service
 {
@@ -27,6 +28,9 @@ namespace FEB.Service
             string api_key = config
                 .GetSection("AppSettings")
                 .GetValue<string>("ApiKey") ?? throw new Exception("ApiKey Required");
+            string gemini_key = config
+                            .GetSection("AppSettings")
+                            .GetValue<string>("GeminiKey") ?? throw new Exception("ApiKey Required");
             var conn = config
                         .GetSection("BlobStorage").GetValue<string>("ConnectionString");
             var blobUrl = $"https://febagent.blob.core.windows.net";
@@ -41,13 +45,25 @@ namespace FEB.Service
             services.AddSingleton<IAIPlugin, OpenAIPlugin>();
             services.AddSingleton<OpenAIService>();
 
-            services.AddOpenAIChatCompletion(modelId: "gpt-4o-mini", apiKey: api_key);
+            services.AddOpenAIChatCompletion(
+                modelId: "gpt-4o-mini", 
+                apiKey: api_key, 
+                serviceId: "openai-chat");
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             services.AddOpenAITextEmbeddingGeneration(
                 modelId: "text-embedding-ada-002",
                 apiKey: api_key
             );
+
 #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+#pragma warning disable SKEXP0070
+            services.AddGoogleAIGeminiChatCompletion(
+                    modelId: "gemini-2.0-flash",
+                    apiKey: gemini_key,
+                    serviceId: "gemini-chat"
+                );
+#pragma warning restore SKEXP0070
 
             services.AddTransient((serviceProvider) =>
             {

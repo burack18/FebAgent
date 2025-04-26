@@ -25,7 +25,7 @@ namespace FEBAgent.Controllers
             {
                 Question = req.question,
                 SessionKey = req.sessionKey
-            });
+            }, req.service);
             return response;
         }
 
@@ -35,6 +35,8 @@ namespace FEBAgent.Controllers
         {
             public string question { get; set; }
             public string sessionKey { get; set; }
+
+            public Constants.AgentService service { get; set; }
         }
     }
 }
