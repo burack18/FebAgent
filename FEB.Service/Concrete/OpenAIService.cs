@@ -1,4 +1,6 @@
-﻿using FEB.Infrastructure.Dto;
+﻿using FEB.Infrastructure;
+using FEB.Infrastructure.Concrete;
+using FEB.Infrastructure.Dto;
 using FEB.Infrastructure.Repositories.Abstract;
 using FEB.Infrastructure.Repositories.Concrete;
 using FEB.Service.Abstract;
@@ -56,7 +58,7 @@ namespace FEB.Service.Concrete
                 OpenAIService._chatHistory.Add(message.UserID, new ChatHistory());
             }
 
-            var enrichedQuestion = await EnrichQuestion(userMessage.Question,service);
+            var enrichedQuestion = await EnrichQuestion(userMessage.Question, service);
 
             var chatHistory = OpenAIService._chatHistory[message.UserID];
 
@@ -112,26 +114,20 @@ namespace FEB.Service.Concrete
             chatHistory.AddSystemMessage(systemMessageFormatted);
             chatHistory.AddUserMessage(userMessage.Question);
 
-            //var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>("openai-chat");
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>(service.ToService());
 
-            OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
-            };
+            PromptExecutionSettings settings = PromptExecutionSettingsFactory.CreatePromptSettings(service);
 
-            // No buffer needed for non-streaming
-            // string buffer = ""; 
-            string aiMessage = ""; // Accumulate the full response here
-                                   // No yield-related variables needed
-                                   // char[] yieldChars = ...
-                                   // int yieldLengthThreshold = ...
+            string aiMessage = string.Empty; 
 
-            var response = await chatCompletionService.GetChatMessageContentAsync(chatHistory, kernel: _kernel, executionSettings: openAIPromptExecutionSettings);
+            var response = await chatCompletionService
+                                .GetChatMessageContentAsync(chatHistory, kernel: _kernel, executionSettings: settings);
 
             chatHistory.AddAssistantMessage(response?.Content ?? string.Empty);
             return response?.Content ?? string.Empty;
         }
+
+
 
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)
         {

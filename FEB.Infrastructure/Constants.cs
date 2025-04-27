@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FEB.Service.Concrete
+namespace FEB.Infrastructure.Concrete
 {
     public static class Constants
     {
