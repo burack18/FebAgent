@@ -57,11 +57,16 @@ namespace FEB.Service.Concrete
             {
                 OpenAIService._chatHistory.Add(message.UserID, new ChatHistory());
             }
-
-            var enrichedQuestion = await EnrichQuestion(userMessage.Question, service);
-
             var chatHistory = OpenAIService._chatHistory[message.UserID];
 
+            if(chatHistory.Count > 20)
+            {
+                chatHistory.Clear();
+                throw new Exception("Please retry. Session will be reset.");
+            }
+
+
+            var enrichedQuestion = await EnrichQuestion(userMessage.Question, service);
             var questionVectors = await Embed([.. enrichedQuestion, userMessage.Question]);
             var relatedDocInfo = string.Empty;
 
@@ -114,19 +119,22 @@ namespace FEB.Service.Concrete
             chatHistory.AddSystemMessage(systemMessageFormatted);
             chatHistory.AddUserMessage(userMessage.Question);
 
+
             var chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>(service.ToService());
 
             PromptExecutionSettings settings = PromptExecutionSettingsFactory.CreatePromptSettings(service);
 
-            string aiMessage = string.Empty; 
+            string aiMessage = string.Empty;
 
-            var response = await chatCompletionService
-                                .GetChatMessageContentAsync(chatHistory, kernel: _kernel, executionSettings: settings);
+            ChatMessageContent response = settings == null
+                                       ? await chatCompletionService.GetChatMessageContentAsync(chatHistory.SanitizeForGemini())
+                                       : await chatCompletionService.GetChatMessageContentAsync(chatHistory, kernel: _kernel, executionSettings: settings);
+
+
 
             chatHistory.AddAssistantMessage(response?.Content ?? string.Empty);
             return response?.Content ?? string.Empty;
         }
-
 
 
         public async Task<IList<ReadOnlyMemory<float>>> Embed(List<string> chunks)
@@ -178,6 +186,11 @@ namespace FEB.Service.Concrete
 
             // Return empty list if parsing failed or no match found
             return new List<string>();
+        }
+        private struct ChatHistoryDto
+        {
+            public List<ChatMessage> Messages { get; set; }
+            public DateTime TimestampCreated { get; set; }
         }
     }
 }

@@ -1,5 +1,6 @@
 using Azure.Storage;
 using Azure.Storage.Blobs;
+using FEB.API.ErrorHandler;
 using FEB.Infrastructure;
 using FEB.Infrastructure.Configuration;
 using FEB.Service;
@@ -122,6 +123,7 @@ if (app.Environment.IsDevelopment())
 
 
 
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 
 //app.UseHttpsRedirection();
