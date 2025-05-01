@@ -10,6 +10,7 @@ namespace FEB.Service.Dto
     {
         public string Question { get; set; }
         public string SessionKey { get; set; }
-        
+        public string UserID { get; set; }
+
     }
 }

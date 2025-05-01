@@ -43,7 +43,7 @@ namespace FEB.API.Controllers
             }
 
             List<Claim> claims = [
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim("UserID", user.Id.ToString()),
         new Claim(ClaimTypes.Email, user.Email),
         new Claim(ClaimTypes.Name, user.UserName)
         ];

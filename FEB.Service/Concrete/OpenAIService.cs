@@ -46,6 +46,7 @@ namespace FEB.Service.Concrete
 
             var message = new ChatMessage
             {
+                UserID=userMessage.UserID,
                 Message = userMessage.Question,
                 TimestampCreated = DateTime.Now,
                 SessionKey = userMessage.SessionKey ?? Guid.NewGuid().ToString(),
@@ -187,6 +188,14 @@ namespace FEB.Service.Concrete
             // Return empty list if parsing failed or no match found
             return new List<string>();
         }
+
+        public async Task ClearChatHistory(string userID)
+        {
+            _ = _chatHistory.TryGetValue(userID, out ChatHistory history);
+            if (history != null) history.Clear();
+            await Task.CompletedTask;
+        }
+
         private struct ChatHistoryDto
         {
             public List<ChatMessage> Messages { get; set; }

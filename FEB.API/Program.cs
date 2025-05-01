@@ -112,6 +112,7 @@ builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseCors("FEBPolicy"); // Apply the policy
 
 
@@ -123,7 +124,7 @@ if (app.Environment.IsDevelopment())
 
 
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
+
 
 
 //app.UseHttpsRedirection();
