@@ -88,7 +88,7 @@ namespace FEB.Service.Concrete
             }
             var systemMessage = await _systemMessageRepository.GetSystemMessage();
             var systemMessageFormatted = string.Format("""
-        {{0}}
+        {0}
 
         You are a helpful AI assistant. You can use available functions and tools to answer user questions. Always use them when they can improve accuracy or provide helpful responses.
         If a function provides the required information, use it without asking the user for unnecessary input. Only ask the user for parameters that are not already available or cannot be inferred.
