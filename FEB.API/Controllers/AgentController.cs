@@ -33,6 +33,20 @@ namespace FEBAgent.Controllers
         }
 
         [Authorize]
+        [HttpPost("ask-smart")]
+        public async Task<string> AskSmartAgent([FromBody] QuestionRequest req)
+        {
+            var userID = User.FindFirstValue("UserID");
+            var response = await service.AskSmart(new FEB.Service.Dto.UserMessage()
+            {
+                Question = req.question,
+                SessionKey = req.sessionKey,
+                UserID = userID
+            }, req.service);
+            return response;
+        }
+
+        [Authorize]
         [HttpPost("clearhistory")]
         public async Task ClearChatHistory()
         {
