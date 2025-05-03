@@ -80,6 +80,7 @@ namespace FEB.Infrastructure.Repositories.Concrete
                     DocumentChunk = d,
                     Similarity = CosineSimilarity(questionVector, d.Vector)
                 })
+                .Where(x => x.Similarity > 0.8)
                 .OrderByDescending(x => x.Similarity)
                 .Take(knn)
                 .ToList();
