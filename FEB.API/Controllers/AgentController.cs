@@ -83,12 +83,7 @@ namespace FEBAgent.Controllers
                 await Response.Body.FlushAsync();
                 await Task.Delay(10);
             }
-            if (enrichmentQuestions.Count > 0)
-            {
-                await Response.WriteAsync($" **Generating Answer...** \n");
-                await Response.Body.FlushAsync();
-                await Task.Delay(10);
-            }
+          
 
             var documents = await service.GetRelatedDocuments([.. enrichmentQuestions, req.question]);
 
@@ -113,10 +108,19 @@ namespace FEBAgent.Controllers
                 SessionKey = req.sessionKey,
                 UserID = userID
             }, req.service, documents);
+            
+            if (enrichmentQuestions.Count > 0)
+            {
+                await Response.WriteAsync($" **Generating Answer...** \n");
+                await Response.Body.FlushAsync();
+                await Task.Delay(10);
+            }
 
             await Response.WriteAsync($"PREQUESTIONEND");
             await Response.Body.FlushAsync();
             await Task.Delay(10);
+
+       
 
             for (int i = 0; i < response.Length; i++)
             {
