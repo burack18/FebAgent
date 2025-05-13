@@ -1,4 +1,5 @@
 ﻿using FEB.Infrastructure.Concrete;
+using FEB.Service.Abstract;
 using FEB.Service.Concrete;
 using FEB.Service.Dto;
 using iText.Commons.Bouncycastle.Cert.Ocsp;
@@ -14,7 +15,7 @@ namespace FEBAgent.Controllers
     [ApiController]
     public class AgentController : ControllerBase
     {
-        private OpenAIService service;
+        private IOpenAIService service;
 
         public AgentController(OpenAIService service)
         {

@@ -43,7 +43,7 @@ namespace FEB.Service
             services.AddSingleton<IUserService, UserService>();
             services.AddSingleton<ISystemMessageService, SystemMessageService>();
             services.AddSingleton<IAIPlugin, OpenAIPlugin>();
-            services.AddSingleton<OpenAIService>();
+            services.AddSingleton<IOpenAIService, OpenAIService>();
 
             services.AddOpenAIChatCompletion(
                 modelId: "gpt-4o-mini", 

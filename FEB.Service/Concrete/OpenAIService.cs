@@ -18,7 +18,7 @@ using System.Text.RegularExpressions;
 
 namespace FEB.Service.Concrete
 {
-    public class OpenAIService
+    public class OpenAIService: IOpenAIService
     {
         private static Dictionary<string, ChatHistory> _chatHistory = new Dictionary<string, ChatHistory>();
         private static Dictionary<string, ChatHistory> _smartChatHistory = new Dictionary<string, ChatHistory>();
