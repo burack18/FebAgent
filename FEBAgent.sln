@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FEB.Service", "FEB.Service\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FEBAgent.Domain", "FEBAgent.Domain\FEBAgent.Domain.csproj", "{AE3C427E-756A-41BE-9E53-DFA2808D8218}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FEBAgent.Tests", "FEBAgent.Tests\FEBAgent.Tests.csproj", "{5D1BA7F9-F7D8-43A0-B5DA-327F988EA742}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,8 +35,15 @@ Global
 		{AE3C427E-756A-41BE-9E53-DFA2808D8218}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE3C427E-756A-41BE-9E53-DFA2808D8218}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE3C427E-756A-41BE-9E53-DFA2808D8218}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D1BA7F9-F7D8-43A0-B5DA-327F988EA742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D1BA7F9-F7D8-43A0-B5DA-327F988EA742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D1BA7F9-F7D8-43A0-B5DA-327F988EA742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D1BA7F9-F7D8-43A0-B5DA-327F988EA742}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE296BBB-D545-4556-AF6F-72283ACBD1A7}
 	EndGlobalSection
 EndGlobal
