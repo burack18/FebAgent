@@ -26,12 +26,12 @@ namespace FEB.Service.DocumentStorage
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _containerName = "documents";
         private readonly IDocumentRepository _documentRepository;
-        private readonly OpenAIService _openAIservice;
+        private readonly IOpenAIService _openAIservice;
 
         public DocumentStorage(IDocumentRepository documentRepository,
             ILogger<DocumentStorage> logger,
             BlobServiceClient blobServiceClient,
-            OpenAIService openAIservice)
+            IOpenAIService openAIservice)
             : base(documentRepository, logger)
         {
             _blobServiceClient = blobServiceClient;

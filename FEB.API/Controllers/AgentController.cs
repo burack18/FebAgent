@@ -17,7 +17,7 @@ namespace FEBAgent.Controllers
     {
         private IOpenAIService service;
 
-        public AgentController(OpenAIService service)
+        public AgentController(IOpenAIService service)
         {
             this.service = service;
         }

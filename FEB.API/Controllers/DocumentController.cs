@@ -3,6 +3,7 @@ using FEB.Service.Abstract;
 using FEBAgent.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FEB.API.Controllers
 {
@@ -12,12 +13,10 @@ namespace FEB.API.Controllers
     {
 
         private readonly IDocumentService _documentService;
-        private readonly IDocumentRepository documentRepository;
         
-        public DocumentController(IDocumentService documentService, IDocumentRepository documentRepository)
+        public DocumentController(IDocumentService documentService)
         {
             _documentService = documentService;
-            this.documentRepository = documentRepository;
         }
         [Authorize]
         [HttpGet("")]
@@ -32,6 +31,7 @@ namespace FEB.API.Controllers
         public async Task LoadDocument()
         {
             var files = Request.Form.Files;
+            var userID = User.FindFirstValue("UserID");
 
             foreach (var file in files)
             {
@@ -39,7 +39,7 @@ namespace FEB.API.Controllers
                  || file.ContentType == "application/pdf")
                 {
                     // Save the document to the service
-                    await _documentService.SaveDocument("U016061", file);
+                    await _documentService.SaveDocument(userID, file);
 
         
                 }

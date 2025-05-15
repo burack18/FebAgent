@@ -36,6 +36,8 @@ namespace FEB.Service
             var blobUrl = $"https://febagent.blob.core.windows.net";
             var credentials = new StorageSharedKeyCredential("febagent", blobKey);
 
+            services.AddSingleton(provider =>
+                new Lazy<IDocumentService>(() => provider.GetRequiredService<IDocumentService>()));
             services.AddSingleton<IDocumentService, DocumentStorage.DocumentStorage>();
             services.AddSingleton<IDocumentRepository, DocumentRepository>();
             services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
